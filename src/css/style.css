@@ -1,0 +1,209 @@
+/* KI-Log Nr. 23: Basis-Styles mit KI erstellt, vom Team geprüft und angepasst */
+
+/* ===== Farben, Abstände und Schrift zentral festlegen ===== */
+:root {
+  --color-primary: #1e5aa8;        /* Hauptfarbe: Kopfzeile, Buttons, Links */
+  --color-primary-dark: #15427c;   /* Hover-Zustand der Hauptfarbe */
+  --color-background: #f4f6f9;     /* Seitenhintergrund */
+  --color-surface: #ffffff;        /* Hintergrund von Karten */
+  --color-text: #1f2933;           /* Standard-Textfarbe */
+  --color-text-muted: #6b7280;     /* Platzhalter und Nebentexte */
+  --color-border: #d9dee5;         /* Rahmen von Karten und Eingabefeldern */
+  --color-success: #1f8a4c;        /* Backend erreichbar */
+  --color-error: #c0392b;          /* Fehlermeldungen */
+  --color-error-background: #fdecea;
+
+  --spacing-small: 0.5rem;
+  --spacing-medium: 1rem;
+  --spacing-large: 1.5rem;
+
+  --radius: 8px;
+  --max-content-width: 960px;
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ===== Grundeinstellungen ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-family);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+h1, h2, h3 {
+  margin-top: 0;
+  line-height: 1.25;
+}
+
+/* ===== Kopfzeile mit Navigation ===== */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-medium);
+  padding: var(--spacing-medium) var(--spacing-large);
+  background-color: var(--color-primary);
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.main-nav {
+  display: flex;
+  gap: var(--spacing-small);
+}
+
+.nav-link {
+  padding: var(--spacing-small) var(--spacing-medium);
+  border-radius: var(--radius);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Aktuell geöffnete Seite hervorheben */
+.nav-link.active {
+  background-color: #ffffff;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ===== Hauptbereich ===== */
+.page-content {
+  flex: 1;   /* schiebt die Fußzeile bei wenig Inhalt nach unten */
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  padding: var(--spacing-large);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-large);
+}
+
+/* ===== Karten als Container für die Bereiche ===== */
+.card {
+  padding: var(--spacing-large);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.placeholder {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* ===== Statusleiste für die Backend-Verbindung ===== */
+.status-bar {
+  display: flex;
+  gap: var(--spacing-small);
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+/* Klassen werden von main.js je nach Ping-Ergebnis gesetzt */
+.status-ok {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.status-error {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+/* ===== Fehlermeldungen aus der API ===== */
+.error-message {
+  padding: var(--spacing-medium);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius);
+  background-color: var(--color-error-background);
+  color: var(--color-error);
+}
+
+/* ===== Gemeinsame Formular-Elemente für FE #1, #2 und #3 ===== */
+label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+input,
+select {
+  width: 100%;
+  padding: var(--spacing-small);
+  margin-bottom: var(--spacing-medium);
+  font: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+button {
+  padding: var(--spacing-small) var(--spacing-large);
+  font: inherit;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== Fußzeile ===== */
+.site-footer {
+  padding: var(--spacing-medium);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+/* ===== Kleine Bildschirme ===== */
+@media (max-width: 600px) {
+  .site-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-content {
+    padding: var(--spacing-medium);
+  }
+}
