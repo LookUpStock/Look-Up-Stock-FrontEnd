@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LookUpStock – Simulation</title>
+
+  <!-- Gemeinsame Styles aller Seiten -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Einstiegspunkt; api.js und chart.js werden von main.js importiert -->
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <!-- KI-Log Nr. 23: HTML-Grundgerüst mit KI erstellt, vom Team geprüft und angepasst -->
+
+  <header class="site-header">
+    <a href="index.html" class="logo">LookUpStock</a>
+    <nav class="main-nav">
+      <a href="index.html" class="nav-link active">Simulation</a>
+      <a href="portfolio.html" class="nav-link">Portfolios</a>
+    </nav>
+  </header>
+
+  <main class="page-content">
+    <!-- Verbindungsstatus zum Backend (FE #6, Prüfung über GET /api/v1/ping) -->
+    <section class="status-bar">
+      <span>Backend:</span>
+      <span id="backend-status">wird geprüft …</span>
+    </section>
+
+    <!-- Platzhalter für die Eingabemaske der Simulation (FE #3, US-04) -->
+    <section id="simulation-input" class="card">
+      <h2>Simulation starten</h2>
+      <p class="placeholder">Eingabemaske folgt in FE #3.</p>
+    </section>
+
+    <!-- Platzhalter für das Fächerdiagramm (FE #3, US-04) -->
+    <section id="simulation-result" class="card">
+      <h2>Mögliche Wertverläufe</h2>
+      <p class="placeholder">Fächerdiagramm folgt in FE #3.</p>
+    </section>
+
+    <!-- Bereich für Fehlermeldungen aus der API (error.message) -->
+    <div id="error-message" class="error-message" hidden></div>
+  </main>
+
+  <footer class="site-footer">
+    <p>LookUpStock · DHBW Webprojekt</p>
+  </footer>
+</body>
+</html>

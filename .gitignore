@@ -1,0 +1,10 @@
+# Node-Abhängigkeiten und Testberichte
+node_modules/
+coverage/
+
+# Lokale Umgebungsvariablen (nur .env.example wird committet)
+.env
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
