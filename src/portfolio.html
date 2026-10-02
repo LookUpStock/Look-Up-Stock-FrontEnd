@@ -1,11 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LookUpStock – Portfolios</title>
+
+  <!-- Gemeinsame Styles aller Seiten -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Einstiegspunkt; api.js wird von main.js importiert -->
+  <script type="module" src="js/main.js"></script>
 </head>
 <body>
-    
+  <!-- KI-Log Nr. 23: HTML-Grundgerüst mit KI erstellt, vom Team geprüft und angepasst -->
+
+  <header class="site-header">
+    <a href="index.html" class="logo">LookUpStock</a>
+    <nav class="main-nav">
+      <a href="index.html" class="nav-link">Simulation</a>
+      <a href="portfolio.html" class="nav-link active">Portfolios</a>
+    </nav>
+  </header>
+
+  <main class="page-content">
+    <!-- Verbindungsstatus zum Backend (FE #6, Prüfung über GET /api/v1/ping) -->
+    <section class="status-bar">
+      <span>Backend:</span>
+      <span id="backend-status">wird geprüft …</span>
+    </section>
+
+    <!-- Platzhalter für die Anlagensuche (FE #1, US-02, GET /api/v1/assets/search) -->
+    <section id="asset-search" class="card">
+      <h2>Anlagen suchen</h2>
+      <p class="placeholder">Suchfeld mit Trefferliste folgt in FE #1.</p>
+    </section>
+
+    <!-- Platzhalter für den Portfolio-Editor (FE #2, US-03, POST /api/v1/portfolios) -->
+    <section id="portfolio-editor" class="card">
+      <h2>Portfolio erstellen</h2>
+      <p class="placeholder">Portfolio-Editor mit Gewichtung folgt in FE #2.</p>
+    </section>
+
+    <!-- Bereich für Fehlermeldungen aus der API (error.message) -->
+    <div id="error-message" class="error-message" hidden></div>
+  </main>
+
+  <footer class="site-footer">
+    <p>LookUpStock · DHBW Webprojekt</p>
+  </footer>
 </body>
 </html>
