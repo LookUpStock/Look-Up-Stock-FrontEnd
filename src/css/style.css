@@ -183,6 +183,125 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* ===== Portfolio-Editor ===== */
+.portfolio-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-large);
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-group input,
+.position-grid input {
+  margin-bottom: 0;
+}
+
+.field-error {
+  min-height: 1.25rem;
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.9rem;
+}
+
+.positions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-medium);
+}
+
+.positions-header h3 {
+  margin: 0;
+}
+
+.positions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-medium);
+}
+
+.position-item {
+  margin: 0;
+  padding: var(--spacing-medium);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: #fbfcfe;
+}
+
+.position-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-medium);
+  margin-bottom: var(--spacing-medium);
+}
+
+.position-item-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.position-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-medium);
+}
+
+.position-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-medium);
+}
+
+.button-danger {
+  background-color: var(--color-error);
+}
+
+.button-danger:hover {
+  background-color: #a93226;
+}
+
+.summary-card {
+  padding: var(--spacing-medium);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: #fafbfc;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-medium);
+}
+
+.summary-value {
+  font-weight: 700;
+}
+
+.summary-status {
+  margin: 0.35rem 0 0;
+  font-weight: 600;
+}
+
+.summary-status-valid {
+  color: var(--color-success);
+}
+
+.summary-status-invalid {
+  color: var(--color-error);
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-small);
+}
+
 /* ===== Fußzeile ===== */
 .site-footer {
   padding: var(--spacing-medium);
@@ -205,5 +324,16 @@ button:disabled {
 
   .page-content {
     padding: var(--spacing-medium);
+  }
+
+  .positions-header,
+  .position-item-header,
+  .summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .position-grid {
+    grid-template-columns: 1fr;
   }
 }

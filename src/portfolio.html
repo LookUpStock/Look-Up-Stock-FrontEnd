@@ -8,8 +8,9 @@
   <!-- Gemeinsame Styles aller Seiten -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Einstiegspunkt; api.js wird von main.js importiert -->
+  <!-- Einstiegspunkte; api.js wird von main.js importiert -->
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/portfolio-ui.js"></script>
 </head>
 <body>
   <!-- KI-Log Nr. 23: HTML-Grundgerüst mit KI erstellt, vom Team geprüft und angepasst -->
@@ -35,10 +36,38 @@
       <p class="placeholder">Suchfeld mit Trefferliste folgt in FE #1.</p>
     </section>
 
-    <!-- Platzhalter für den Portfolio-Editor (FE #2, US-03, POST /api/v1/portfolios) -->
-    <section id="portfolio-editor" class="card">
-      <h2>Portfolio erstellen</h2>
-      <p class="placeholder">Portfolio-Editor mit Gewichtung folgt in FE #2.</p>
+    <!-- Portfolio-Editor mit Gewichtung (FE #2, lokal im Browser) -->
+    <section id="portfolio-editor" class="card portfolio-editor">
+      <h2>Portfolio bearbeiten</h2>
+
+      <form id="portfolio-form" class="portfolio-form" novalidate>
+        <div class="field-group">
+          <label for="portfolio-name">Portfolio-Name</label>
+          <input id="portfolio-name" name="portfolio-name" type="text" autocomplete="off" maxlength="120" required>
+          <p id="portfolio-name-error" class="field-error" aria-live="polite"></p>
+        </div>
+
+        <div class="positions-header">
+          <h3>Positionen</h3>
+          <button id="add-position" type="button">Position hinzufügen</button>
+        </div>
+
+        <div id="positions-list" class="positions-list" aria-live="polite"></div>
+
+        <div class="summary-card" aria-labelledby="portfolio-total-label" aria-describedby="portfolio-total-error">
+          <div class="summary-row">
+            <strong id="portfolio-total-label">Gewichtssumme</strong>
+            <span id="portfolio-total-value" class="summary-value">0,00 %</span>
+          </div>
+          <p id="portfolio-total-status" class="summary-status" role="status" aria-live="polite"></p>
+          <p id="portfolio-total-error" class="field-error" aria-live="polite"></p>
+        </div>
+
+        <div class="action-row">
+          <button id="normalize-weights" type="button">Normalisieren</button>
+          <button id="equalize-weights" type="button">Gleichgewichten</button>
+        </div>
+      </form>
     </section>
 
     <!-- Bereich für Fehlermeldungen aus der API (error.message) -->
