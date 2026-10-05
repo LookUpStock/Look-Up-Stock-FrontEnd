@@ -1,0 +1,36 @@
+# Workflow mit Claude erstellt, vom Team geprüft und angepasst
+# CI-Pipeline für das Frontend: installiert Abhängigkeiten und führt alle Tests aus
+
+name: Frontend CI
+
+on:
+  # Läuft, wenn etwas auf main landet (also nach jedem Merge)
+  push:
+    branches: [main]
+  # Läuft bei jedem Pull Request, der nach main zielt
+  pull_request:
+    branches: [main]
+  # Erlaubt einen manuellen Start über den Reiter "Actions"
+  workflow_dispatch:
+
+jobs:
+  test:
+    # Anzeigename, erscheint als Statuscheck im Pull Request
+    name: Test
+    runs-on: ubuntu-latest
+    # Der Job darf den Code nur lesen
+    permissions:
+      contents: read
+    # Bricht hängende Läufe nach 10 Minuten ab
+    timeout-minutes: 10
+    steps:
+              # Holt den Code des Branches auf den Runner
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      # Installiert Node 24 und speichert npm-Pakete zwischen
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
