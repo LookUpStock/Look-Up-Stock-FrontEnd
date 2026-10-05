@@ -2,6 +2,8 @@
 
 import { fetchPing } from "./api.js";
 
+import { initAssetSearch } from "./search.js";
+
 // Verbindung zum Backend prüfen und Ergebnis in der Statusleiste anzeigen
 async function checkBackendStatus() {
   const statusElement = document.getElementById("backend-status");
@@ -24,3 +26,10 @@ async function checkBackendStatus() {
 }
 
 checkBackendStatus();
+
+
+// Anlagensuche nur auf Seiten mit Suchbereich starten (portfolio.html, FE #1)
+const searchSection = document.getElementById("asset-search");
+if (searchSection) {
+  initAssetSearch(searchSection);
+}
