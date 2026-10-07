@@ -58,3 +58,14 @@ export async function request(path, options = {}) {
 export function fetchPing() {
   return request("/ping");
 }
+
+// KI-Log Nr. 19: Suchfunktion mit KI erstellt, von Mert Eminel geprüft (FE #1)
+// Anlagen nach Ticker, ISIN oder Name suchen (GET /api/v1/assets/search, US-02)
+// Ohne limit gilt der Standard des Backends (10 Treffer, erlaubt sind 1 bis 25)
+export function searchAssets(query, limit) {
+  const params = new URLSearchParams({ q: query });
+  if (limit !== undefined) {
+    params.set("limit", String(limit));
+  }
+  return request(`/assets/search?${params}`);
+}
