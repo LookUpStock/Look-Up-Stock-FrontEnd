@@ -408,3 +408,81 @@ button:disabled {
   font-size: 0.9rem;
   color: var(--color-text-muted);
 }
+
+/* ===== Anmeldung und Registrierung (FE #4, US-01) ===== */
+/* KI-Log Nr. [eintragen]: Styles der Anmeldung mit KI erstellt, von Mert Eminel geprüft */
+
+/* Ausgeblendete Elemente immer verbergen, auch wenn eine Klasse "display" setzt
+   (z. B. der gesperrte Portfolio-Editor ohne Anmeldung) */
+[hidden] {
+  display: none !important;
+}
+
+/* Navigation darf umbrechen, damit "Anmelden" bzw. "Abmelden" auf 360 px passt (NF-10) */
+.main-nav {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Anmeldestatus in der Kopfzeile */
+.auth-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-small);
+  color: #ffffff;
+}
+
+.auth-user {
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;   /* lange E-Mail-Adressen umbrechen (NF-10) */
+}
+
+/* Abmelden-Button in der Kopfzeile: heller Rahmen statt gefüllter Fläche */
+.button-link {
+  padding: var(--spacing-small) var(--spacing-medium);
+  background-color: transparent;
+  border: 1px solid #ffffff;
+}
+
+.button-link:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Anmelden und Registrieren nebeneinander, auf kleinen Bildschirmen untereinander */
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-large);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+}
+
+.auth-form button {
+  align-self: flex-start;
+}
+
+.field-hint {
+  margin: 0.25rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Hinweis zum Grund der Weiterleitung (E14) oder zur Registrierung (E13) */
+.auth-notice {
+  margin: 0;
+  padding: var(--spacing-medium);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius);
+  background-color: #e8f0fb;
+  color: var(--color-text);
+}
+
+.auth-notice-success {
+  border-color: var(--color-success);
+  background-color: #e7f5ec;
+}
+
