@@ -98,5 +98,18 @@ export function loginUser(email, password) {
 // Abmelden (POST /api/v1/auth/logout); Token steht laut API-Design im Body, Antwort 204 ohne Body
 export function logoutUser(token) {
   return request("/auth/logout", { method: "POST", body: { token } });
+}
 
+// Portfolio speichern (POST /api/v1/portfolios, US-03); liefert das gespeicherte Portfolio (201).
+// Das Backend erwartet je Position die Datenbank-id der Anlage (assetId) und das Gewicht in Prozent.
+export function savePortfolio(token, name, positions) {
+  return request("/portfolios", {
+    method: "POST",
+    body: { token, name, positions: positions.map((p) => ({ assetId: p.assetId, weight: p.weightPct })) },
+  });
+}
+
+// Eigene Portfolios laden (POST /api/v1/portfolios/list); liefert { portfolios: [...] }, neueste zuerst
+export function listPortfolios(token) {
+  return request("/portfolios/list", { method: "POST", body: { token } });
 }

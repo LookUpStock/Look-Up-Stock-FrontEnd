@@ -302,6 +302,48 @@ button:disabled {
   gap: var(--spacing-small);
 }
 
+/* Gespeicherte Portfolios (US-03) */
+.saved-portfolios {
+  margin-top: var(--spacing-medium);
+}
+
+.saved-portfolios h3 {
+  margin: 0;
+}
+
+.saved-portfolios-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+}
+
+.saved-portfolio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-medium);
+  padding: var(--spacing-small) var(--spacing-medium);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.saved-portfolio div {
+  display: flex;
+  flex-direction: column;
+}
+
+.saved-portfolio-name {
+  font-weight: 600;
+}
+
+.saved-portfolio-details {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
 /* ===== Fußzeile ===== */
 .site-footer {
   padding: var(--spacing-medium);
