@@ -44,7 +44,7 @@ Falls PowerShell `npm` blockiert („running scripts is disabled“): einmalig `
 
 | Wert | Ort | Standard |
 |---|---|---|
-| Backend-Adresse | `API_BASE_URL` in `src/js/config.js` | `http://localhost:8080` |
+| Backend-Adresse | `API_BASE_URL` in `src/js/config.js` | `https://lookupstock-da2951e42089.herokuapp.com` |
 
 Für das Deployment auf dem Server wird `API_BASE_URL` angepasst oder per Laufzeit-Override gesetzt.
 

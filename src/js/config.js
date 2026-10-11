@@ -1,4 +1,4 @@
-const LOCAL_API_BASE_URL = "http://localhost:8080";
+const DEFAULT_API_BASE_URL = "https://lookupstock-da2951e42089.herokuapp.com";
 
 function normalizeBaseUrl(value) {
   return String(value ?? "").trim().replace(/\/$/, "");
@@ -24,14 +24,14 @@ function isLocalDevelopmentHost() {
 
 function getDefaultApiBaseUrl() {
   if (typeof window === "undefined") {
-    return LOCAL_API_BASE_URL;
+    return DEFAULT_API_BASE_URL;
   }
 
   if (isLocalDevelopmentHost()) {
-    return LOCAL_API_BASE_URL;
+    return DEFAULT_API_BASE_URL;
   }
 
-  return normalizeBaseUrl(window.location.origin);
+  return DEFAULT_API_BASE_URL;
 }
 
 export const API_BASE_URL = getRuntimeOverride() || getDefaultApiBaseUrl();
