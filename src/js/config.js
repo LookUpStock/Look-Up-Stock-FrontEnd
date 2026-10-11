@@ -10,3 +10,6 @@ function isLocalDevelopmentHost() {
 }
 
 export const API_BASE_URL = isLocalDevelopmentHost() ? LOCAL_API_BASE_URL : REMOTE_API_BASE_URL;
+
+// Gemeinsamer Pfad aller fachlichen Endpunkte laut API-Design
+export const API_PREFIX = "/api/v1";

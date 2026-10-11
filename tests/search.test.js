@@ -30,7 +30,7 @@ test("searchAssets calls the search endpoint with encoded query", async () => {
 
   await searchAssets("msci world");
 
-  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/assets/search?q=msci+world`);
+  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/v1/assets/search?q=msci+world`);
 });
 
 test("searchAssets adds limit only when given", async () => {
@@ -40,7 +40,7 @@ test("searchAssets adds limit only when given", async () => {
 
   await searchAssets("EUNL", 25);
 
-  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/assets/search?q=EUNL&limit=25`);
+  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/v1/assets/search?q=EUNL&limit=25`);
 });
 
 // ===== search.js: Akzeptanzkriterien US-02 =====
