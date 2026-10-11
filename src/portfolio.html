@@ -54,7 +54,7 @@
       <form id="portfolio-form" class="portfolio-form" novalidate>
         <div class="field-group">
           <label for="portfolio-name">Portfolio-Name</label>
-          <input id="portfolio-name" name="portfolio-name" type="text" autocomplete="off" maxlength="120" required>
+          <input id="portfolio-name" name="portfolio-name" type="text" autocomplete="off" maxlength="100" required>
           <p id="portfolio-name-error" class="field-error" aria-live="polite"></p>
         </div>
 
@@ -77,8 +77,18 @@
         <div class="action-row">
           <button id="normalize-weights" type="button">Normalisieren</button>
           <button id="equalize-weights" type="button">Gleichgewichten</button>
+          <!-- Speichern im Backend (US-03, POST /api/v1/portfolios) -->
+          <button id="save-portfolio" type="button">Speichern</button>
         </div>
+        <p id="portfolio-save-status" class="summary-status" role="status" aria-live="polite"></p>
       </form>
+
+      <!-- Eigene Portfolios (POST /api/v1/portfolios/list); "Laden" übernimmt sie in den Editor -->
+      <div class="saved-portfolios">
+        <h3>Gespeicherte Portfolios</h3>
+        <p id="saved-portfolios-hint" class="search-hint" aria-live="polite"></p>
+        <ul id="saved-portfolios-list" class="saved-portfolios-list"></ul>
+      </div>
     </section>
 
     <!-- Bereich für Fehlermeldungen aus der API (error.message) -->

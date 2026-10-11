@@ -7,6 +7,15 @@ import {
   parseWeightInput,
   validatePortfolio,
 } from "./portfolio.js";
+import { clearSession, getToken, loginPageUrl, REASONS, MESSAGES as AUTH_MESSAGES } from "./auth.js";
+import {
+  MESSAGES,
+  formatSavedDetails,
+  loadSavedPortfolios,
+  missingAssetErrors,
+  submitPortfolio,
+  toEditorDraft,
+} from "./portfolio-save.js";
 
 function createId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -19,10 +28,22 @@ function createId() {
 function createDraftPosition(position = {}) {
   return {
     id: position.id ?? createId(),
+    assetId: position.assetId ?? null,
     symbol: position.symbol ?? "",
     name: position.name ?? "",
     weightInput: position.weightInput ?? "",
   };
+}
+
+// Ergebnis von Normalisieren/Gleichgewichten zurück in Eingabefelder übernehmen
+function toDraftPositions(portfolio) {
+  return portfolio.positions.map((position) => createDraftPosition({
+    id: position.id,
+    assetId: position.assetId,
+    symbol: position.symbol,
+    name: position.name,
+    weightInput: formatWeightInput(position.weightPct),
+  }));
 }
 
 function createInitialState() {
@@ -37,6 +58,7 @@ function buildPortfolioModel(state) {
     state.name,
     state.positions.map((position) => ({
       id: position.id,
+      assetId: position.assetId,
       symbol: position.symbol,
       name: position.name,
       weightPct: parseWeightInput(position.weightInput),
@@ -71,10 +93,30 @@ export function initPortfolioEditor(rootDocument = document) {
   const totalValueElement = rootDocument.getElementById("portfolio-total-value");
   const totalStatusElement = rootDocument.getElementById("portfolio-total-status");
   const totalErrorElement = rootDocument.getElementById("portfolio-total-error");
+  const saveButton = rootDocument.getElementById("save-portfolio");
+  const saveStatusElement = rootDocument.getElementById("portfolio-save-status");
+  const savedHintElement = rootDocument.getElementById("saved-portfolios-hint");
+  const savedListElement = rootDocument.getElementById("saved-portfolios-list");
+
+  // Fehlende Anlagen erst nach dem ersten Speicherversuch markieren, nicht schon beim Tippen
+  let showAssetErrors = false;
+
+  function setSaveStatus(message, isError) {
+    saveStatusElement.textContent = message;
+    saveStatusElement.classList.toggle("summary-status-valid", Boolean(message) && !isError);
+    saveStatusElement.classList.toggle("summary-status-invalid", Boolean(message) && isError);
+  }
+
+  // Anmeldung abgelaufen oder vom Backend abgelehnt (401): neu anmelden, danach zurück zum Editor
+  function redirectToLogin() {
+    clearSession();
+    window.location.assign(loginPageUrl(REASONS.expired, "portfolio.html"));
+  }
 
   function updateSummaryAndErrors() {
     const portfolio = buildPortfolioModel(state);
     const validation = validatePortfolio(portfolio);
+    const assetErrors = showAssetErrors ? missingAssetErrors(portfolio) : [];
     const totalWeightPct = calculateTotalWeight(portfolio);
     const hasErrors = !validation.valid;
     const hasInvalidWeights = validation.errors.positions.some((positionErrors) => positionErrors.weightPct);
@@ -109,7 +151,7 @@ export function initPortfolioEditor(rootDocument = document) {
       nameInput.value = rowState.name;
       weightInput.value = rowState.weightInput;
 
-      setFieldError(symbolInput, symbolError, positionErrors.symbol);
+      setFieldError(symbolInput, symbolError, positionErrors.symbol || assetErrors[index] || "");
       setFieldError(nameInput, nameError, positionErrors.name);
       setFieldError(weightInput, weightError, positionErrors.weightPct);
     });
@@ -120,7 +162,7 @@ export function initPortfolioEditor(rootDocument = document) {
     return validation;
   }
 
-  function renderPositions(focusPositionId = null) {
+  function renderPositions(focusPositionId = null, focusField = "symbol") {
     positionsList.innerHTML = "";
 
     state.positions.forEach((position, index) => {
@@ -164,6 +206,8 @@ export function initPortfolioEditor(rootDocument = document) {
 
       symbolInput.addEventListener("input", (event) => {
         position.symbol = event.target.value;
+        // Von Hand geändertes Symbol passt nicht mehr zur Anlage aus der Suche
+        position.assetId = null;
         updateSummaryAndErrors();
       });
 
@@ -195,7 +239,7 @@ export function initPortfolioEditor(rootDocument = document) {
     });
 
     if (focusPositionId) {
-      const focusInput = positionsList.querySelector(`[data-position-id="${focusPositionId}"] [data-position-field="symbol"]`);
+      const focusInput = positionsList.querySelector(`[data-position-id="${focusPositionId}"] [data-position-field="${focusField}"]`);
       if (focusInput) {
         focusInput.focus();
       }
@@ -224,33 +268,128 @@ export function initPortfolioEditor(rootDocument = document) {
       return;
     }
 
-    const normalizedPortfolio = normalizePortfolioWeights(portfolio);
-
-    state.positions = normalizedPortfolio.positions.map((position) => createDraftPosition({
-      id: position.id,
-      symbol: position.symbol,
-      name: position.name,
-      weightInput: formatWeightInput(position.weightPct),
-    }));
-
+    state.positions = toDraftPositions(normalizePortfolioWeights(portfolio));
     renderPositions();
   });
 
   equalizeButton.addEventListener("click", () => {
-    const portfolio = buildPortfolioModel(state);
-    const equalizedPortfolio = equalizePortfolioWeights(portfolio);
-
-    state.positions = equalizedPortfolio.positions.map((position) => createDraftPosition({
-      id: position.id,
-      symbol: position.symbol,
-      name: position.name,
-      weightInput: formatWeightInput(position.weightPct),
-    }));
-
+    state.positions = toDraftPositions(equalizePortfolioWeights(buildPortfolioModel(state)));
     renderPositions();
   });
 
+  // Treffer aus der Anlagensuche (search.js, Ereignis "asset-selected") als Position übernehmen.
+  // Die id der Anlage wird als assetId gespeichert; ohne sie lehnt das Backend das Portfolio ab.
+  rootDocument.addEventListener("asset-selected", (event) => {
+    const asset = event.detail;
+    const existing = state.positions.find((position) => position.assetId === asset.id);
+
+    if (existing) {
+      renderPositions(existing.id, "weightPct");
+      return;
+    }
+
+    let target = state.positions.find((position) => !position.symbol.trim() && !position.name.trim());
+    if (!target) {
+      target = createDraftPosition();
+      state.positions.push(target);
+    }
+
+    target.assetId = asset.id;
+    target.symbol = asset.symbol ?? "";
+    target.name = asset.name ?? "";
+    renderPositions(target.id, "weightPct");
+  });
+
+  saveButton.addEventListener("click", async () => {
+    showAssetErrors = true;
+    const validation = updateSummaryAndErrors();
+    const portfolio = buildPortfolioModel(state);
+
+    if (!validation.valid || missingAssetErrors(portfolio).some(Boolean)) {
+      setSaveStatus(MESSAGES.fixErrors, true);
+      return;
+    }
+
+    saveButton.disabled = true;
+    setSaveStatus(MESSAGES.saving, false);
+    const result = await submitPortfolio(portfolio, getToken());
+    saveButton.disabled = false;
+
+    if (result.status === "unauthorized") {
+      redirectToLogin();
+      return;
+    }
+    if (result.status === "error") {
+      setSaveStatus(result.message, true);
+      return;
+    }
+
+    setSaveStatus(MESSAGES.saved, false);
+    refreshSavedPortfolios();
+  });
+
+  function loadIntoEditor(saved) {
+    const draft = toEditorDraft(saved);
+    state.name = draft.name;
+    state.positions = draft.positions.map(createDraftPosition);
+    setSaveStatus("", false);
+    renderPositions();
+    portfolioNameInput.focus();
+  }
+
+  function renderSavedPortfolios(portfolios) {
+    savedListElement.replaceChildren();
+
+    for (const saved of portfolios) {
+      const item = rootDocument.createElement("li");
+      item.className = "saved-portfolio";
+
+      // textContent statt innerHTML: Namen aus der API werden nie als HTML ausgeführt
+      const text = rootDocument.createElement("div");
+      const name = rootDocument.createElement("span");
+      name.className = "saved-portfolio-name";
+      name.textContent = saved.name;
+      const details = rootDocument.createElement("span");
+      details.className = "saved-portfolio-details";
+      details.textContent = formatSavedDetails(saved);
+      text.append(name, details);
+
+      const button = rootDocument.createElement("button");
+      button.type = "button";
+      button.textContent = "Laden";
+      button.addEventListener("click", () => loadIntoEditor(saved));
+
+      item.append(text, button);
+      savedListElement.append(item);
+    }
+  }
+
+  async function refreshSavedPortfolios() {
+    const token = getToken();
+    // Ohne Anmeldung ist der Editor ausgeblendet (protectSection); nichts laden
+    if (!token) {
+      return;
+    }
+
+    savedHintElement.textContent = MESSAGES.loading;
+    const result = await loadSavedPortfolios(token);
+
+    if (result.status === "unauthorized") {
+      savedListElement.replaceChildren();
+      savedHintElement.textContent = AUTH_MESSAGES.expired;
+      return;
+    }
+    if (result.status === "error") {
+      savedHintElement.textContent = result.message;
+      return;
+    }
+
+    renderSavedPortfolios(result.portfolios);
+    savedHintElement.textContent = result.portfolios.length === 0 ? MESSAGES.noPortfolios : "";
+  }
+
   renderPositions();
+  refreshSavedPortfolios();
 }
 
 initPortfolioEditor();

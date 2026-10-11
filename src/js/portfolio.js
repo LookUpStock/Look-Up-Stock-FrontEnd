@@ -37,6 +37,8 @@ function formatWeightPct(value) {
 function clonePosition(position) {
   return {
     id: position.id,
+    // Datenbank-id der Anlage aus der Suche; das Backend speichert nur damit (US-03)
+    assetId: position.assetId ?? null,
     symbol: toTrimmedString(position.symbol),
     name: toTrimmedString(position.name),
     weightPct: formatWeightPct(position.weightPct),
@@ -57,6 +59,7 @@ function distributeCents(totalCents, count) {
 export function createPosition(position = {}) {
   return clonePosition({
     id: position.id ?? crypto.randomUUID(),
+    assetId: position.assetId ?? null,
     symbol: position.symbol ?? "",
     name: position.name ?? "",
     weightPct: position.weightPct ?? 0,
