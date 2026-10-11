@@ -344,6 +344,114 @@ button:disabled {
   color: var(--color-text-muted);
 }
 
+/* ===== Simulation (FE #3, US-04) ===== */
+.simulation-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-medium);
+}
+
+.simulation-portfolio select {
+  margin-bottom: 0;
+}
+
+.simulation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-small) var(--spacing-medium);
+}
+
+.fan-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fan-chart-grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.fan-chart-axis {
+  stroke: var(--color-text-muted);
+  stroke-width: 1;
+}
+
+.fan-chart-label {
+  font-size: 12px;
+  fill: var(--color-text-muted);
+}
+
+.fan-chart-band {
+  fill: var(--color-primary);
+  fill-opacity: 0.15;
+  stroke: none;
+}
+
+.fan-chart-edge {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+}
+
+.fan-chart-median {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2.5;
+}
+
+.fan-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-medium);
+  margin: var(--spacing-small) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.fan-chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 1.25rem;
+}
+
+.legend-median {
+  height: 3px;
+  background-color: var(--color-primary);
+}
+
+.legend-band {
+  height: 0.75rem;
+  background-color: rgba(30, 90, 168, 0.15);
+  border: 1px solid rgba(30, 90, 168, 0.45);
+}
+
+.simulation-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--spacing-small) var(--spacing-medium);
+  margin: var(--spacing-medium) 0 0;
+}
+
+.simulation-summary dt {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.simulation-summary dd {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
 /* ===== Fußzeile ===== */
 .site-footer {
   padding: var(--spacing-medium);

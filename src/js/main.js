@@ -15,6 +15,7 @@ function normalizeLocalhostOrigin() {
 normalizeLocalhostOrigin();
 
 import { initAssetSearch } from "./search.js";
+import { initSimulationPage } from "./simulation.js";
 
 import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage } from "./auth.js";
 
@@ -68,4 +69,9 @@ checkBackendStatus();
 const searchSection = document.getElementById("asset-search");
 if (searchSection) {
   initAssetSearch(searchSection);
+}
+
+// Simulation nur auf der Simulationsseite starten (index.html, FE #3, US-04)
+if (document.getElementById("simulation-form") && session.status === "valid") {
+  initSimulationPage();
 }
