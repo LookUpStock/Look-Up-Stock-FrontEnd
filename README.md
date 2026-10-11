@@ -11,7 +11,7 @@ Benutzeroberfläche für LookUpStock: Anlagen suchen, Portfolios zusammenstellen
 
 - VS Code mit der Extension **Live Server** (Ritwick Dey)
 - Node.js 24 (`node -v`)
-- Laufendes Backend unter `http://localhost:8080` (siehe README im Backend-Repository)
+- Laufendes Backend unter der lokalen Standard-URL aus `src/js/config.js` (siehe README im Backend-Repository)
 
 ## Starten
 
@@ -24,7 +24,7 @@ Benutzeroberfläche für LookUpStock: Anlagen suchen, Portfolios zusammenstellen
 2. In VS Code Rechtsklick auf `src/index.html` → **Open with Live Server**.
 3. Die Statusleiste oben zeigt „Backend: verbunden“, wenn die Verbindung steht.
 
-Live Server muss auf **Port 5500** laufen. Das Backend erlaubt per CORS nur `http://localhost:5500` und `http://127.0.0.1:5500`. Die Seiten nicht per Doppelklick öffnen (`file://`), da ES-Module und API-Aufrufe dann nicht funktionieren.
+Live Server muss auf **Port 5500** laufen. Die Seite sollte über `http://localhost:5500` geöffnet werden. Wenn Live Server `127.0.0.1:5500` verwendet, leitet das Frontend automatisch auf `localhost` um. Die Seiten nicht per Doppelklick öffnen (`file://`), da ES-Module und API-Aufrufe dann nicht funktionieren.
 
 ## Testen
 
@@ -44,9 +44,9 @@ Falls PowerShell `npm` blockiert („running scripts is disabled“): einmalig `
 
 | Wert | Ort | Standard |
 |---|---|---|
-| Backend-Adresse | `API_BASE_URL` in `src/js/api.js` | `http://localhost:8080/api/v1` |
+| Backend-Adresse | `API_BASE_URL` in `src/js/config.js` | `http://localhost:8080` |
 
-Für das Deployment auf dem Server wird `API_BASE_URL` angepasst.
+Für das Deployment auf dem Server wird `API_BASE_URL` angepasst oder per Laufzeit-Override gesetzt.
 
 ## Projektstruktur
 
