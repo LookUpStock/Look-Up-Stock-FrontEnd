@@ -25,7 +25,7 @@ test("fetchHealth calls the health endpoint and returns the response", async () 
   const result = await fetchHealth();
 
   assert.deepEqual(result, { status: "ok" });
-  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/health`);
+  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/v1/ping`);
 });
 
 test("request sends method, JSON header and body for POST", async () => {
@@ -68,7 +68,7 @@ test("request throws ApiError with backend error format", async () => {
 test("request throws ApiError with fallback message for unknown error format", async () => {
   mockFetchResponse(500, { unexpected: true });
 
-  await assert.rejects(request("/api/health"), (error) => {
+  await assert.rejects(request("/ping"), (error) => {
     assert.equal(error.status, 500);
     assert.equal(error.code, "UNKNOWN_ERROR");
     assert.equal(error.message, "Ein unerwarteter Fehler ist aufgetreten.");

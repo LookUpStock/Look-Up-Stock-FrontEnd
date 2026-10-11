@@ -66,7 +66,7 @@ test("registerUser sends email and password to POST /auth/register", async () =>
   await registerUser("anna@example.com", "geheim123");
 
   const [url, options] = fetchMock.mock.calls[0].arguments;
-  assert.equal(url, `${API_BASE_URL}/auth/register`);
+  assert.equal(url, `${API_BASE_URL}/api/v1/auth/register`);
   assert.equal(options.method, "POST");
   assert.deepEqual(JSON.parse(options.body), { email: "anna@example.com", password: "geheim123" });
 });
@@ -76,7 +76,7 @@ test("loginUser sends credentials to POST /auth/login", async () => {
 
   const result = await loginUser("anna@example.com", "geheim123");
 
-  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/auth/login`);
+  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/v1/auth/login`);
   assert.deepEqual(result, { token: "abc123", expiresAt: EXPIRES_AT });
 });
 
@@ -86,7 +86,7 @@ test("logoutUser sends the token in the body to POST /auth/logout", async () => 
   const result = await logoutUser("abc123");
 
   const [url, options] = fetchMock.mock.calls[0].arguments;
-  assert.equal(url, `${API_BASE_URL}/auth/logout`);
+  assert.equal(url, `${API_BASE_URL}/api/v1/auth/logout`);
   assert.deepEqual(JSON.parse(options.body), { token: "abc123" });
   assert.equal(result, null);
 });

@@ -1,6 +1,6 @@
 // KI-Log Nr. 23: API-Schicht mit KI erstellt, vom Team geprüft und angepasst
 
-import { API_BASE_URL } from "./config.js";
+import { API_BASE_URL, API_PREFIX } from "./config.js";
 
 export { API_BASE_URL };
 
@@ -23,7 +23,7 @@ export async function request(path, options = {}) {
 
   let response;
   try {
-    response = await fetch(new URL(normalizedPath, `${API_BASE_URL}/`).href, {
+    response = await fetch(`${API_BASE_URL}${API_PREFIX}${normalizedPath}`, {
       method,
       // Content-Type nur bei Anfragen mit Body setzen
       headers: hasBody ? { "Content-Type": "application/json" } : {},
@@ -64,9 +64,9 @@ export function postJson(path, body) {
   return request(path, { method: "POST", body });
 }
 
-// Erreichbarkeit des Backends prüfen (GET /api/health)
+// Erreichbarkeit des Backends prüfen (GET /api/v1/ping)
 export function fetchHealth() {
-  return getJson("/api/health");
+  return getJson("/ping");
 }
 
 export function fetchPing() {
