@@ -113,3 +113,10 @@ export function savePortfolio(token, name, positions) {
 export function listPortfolios(token) {
   return request("/portfolios/list", { method: "POST", body: { token } });
 }
+
+// Monte-Carlo-Simulation starten (POST /api/v1/simulations, US-04).
+// parameters: { startCapital, monthlyContribution, horizonYears, paths, seed }; seed darf fehlen.
+// Liefert u. a. timeline: [{ month, p5, p50, p95 }] für das Fächerdiagramm.
+export function runSimulation(token, portfolioId, parameters) {
+  return request("/simulations", { method: "POST", body: { token, portfolioId, parameters } });
+}

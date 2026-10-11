@@ -32,16 +32,61 @@
       <span id="backend-status">wird geprüft …</span>
     </section>
 
-    <!-- Platzhalter für die Eingabemaske der Simulation (FE #3, US-04) -->
+    <!-- Eingabemaske der Simulation (FE #3, US-04, POST /api/v1/simulations) -->
     <section id="simulation-input" class="card">
       <h2>Simulation starten</h2>
-      <p class="placeholder">Eingabemaske folgt in FE #3.</p>
+
+      <form id="simulation-form" class="simulation-form" novalidate>
+        <div class="field-group simulation-portfolio">
+          <label for="simulation-portfolio">Portfolio</label>
+          <select id="simulation-portfolio" name="portfolioId" required>
+            <option value="">Bitte auswählen</option>
+          </select>
+          <p id="simulation-portfolio-hint" class="search-hint" aria-live="polite"></p>
+          <p id="simulation-portfolioId-error" class="field-error" aria-live="polite"></p>
+        </div>
+
+        <div class="simulation-grid">
+          <div class="field-group">
+            <label for="simulation-start-capital">Startkapital in €</label>
+            <input id="simulation-start-capital" name="startCapital" type="text" inputmode="decimal" autocomplete="off" required>
+            <p id="simulation-startCapital-error" class="field-error" aria-live="polite"></p>
+          </div>
+          <div class="field-group">
+            <label for="simulation-monthly">Monatliche Sparrate in €</label>
+            <input id="simulation-monthly" name="monthlyContribution" type="text" inputmode="decimal" autocomplete="off" required>
+            <p id="simulation-monthlyContribution-error" class="field-error" aria-live="polite"></p>
+          </div>
+          <div class="field-group">
+            <label for="simulation-horizon">Anlagehorizont in Jahren (1–40)</label>
+            <input id="simulation-horizon" name="horizonYears" type="text" inputmode="numeric" autocomplete="off" required>
+            <p id="simulation-horizonYears-error" class="field-error" aria-live="polite"></p>
+          </div>
+          <div class="field-group">
+            <label for="simulation-paths">Simulationspfade (1.000–50.000)</label>
+            <input id="simulation-paths" name="paths" type="text" inputmode="numeric" autocomplete="off" required>
+            <p id="simulation-paths-error" class="field-error" aria-live="polite"></p>
+          </div>
+          <div class="field-group">
+            <label for="simulation-seed">Seed (optional)</label>
+            <input id="simulation-seed" name="seed" type="text" inputmode="numeric" autocomplete="off" placeholder="zufällig">
+            <p id="simulation-seed-error" class="field-error" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button type="submit">Simulation starten</button>
+        </div>
+        <p id="simulation-status" class="summary-status" role="status" aria-live="polite"></p>
+      </form>
     </section>
 
-    <!-- Platzhalter für das Fächerdiagramm (FE #3, US-04) -->
-    <section id="simulation-result" class="card">
+    <!-- Fächerdiagramm mit p5, p50 und p95 (FE #3, US-04); sichtbar nach der ersten Simulation -->
+    <section id="simulation-result" class="card" hidden>
       <h2>Mögliche Wertverläufe</h2>
-      <p class="placeholder">Fächerdiagramm folgt in FE #3.</p>
+      <div id="simulation-chart" class="fan-chart-container"></div>
+      <dl id="simulation-summary" class="simulation-summary"></dl>
+      <p id="simulation-note" class="search-hint"></p>
     </section>
 
     <!-- Bereich für Fehlermeldungen aus der API (error.message) -->
