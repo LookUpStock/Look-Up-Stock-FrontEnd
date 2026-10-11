@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LookUpStock – Anmelden</title>
+
+  <!-- Gemeinsame Styles aller Seiten -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Einstiegspunkt; main.js startet auf dieser Seite die Anmeldung (auth.js) -->
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <!-- KI-Log Nr. [eintragen]: Anmeldeseite mit KI erstellt, von Mert Eminel geprüft (FE #4, US-01) -->
+
+  <header class="site-header">
+    <a href="index.html" class="logo">LookUpStock</a>
+    <nav class="main-nav">
+      <a href="index.html" class="nav-link">Simulation</a>
+      <a href="portfolio.html" class="nav-link">Portfolios</a>
+      <div id="auth-status" class="auth-status"></div>
+    </nav>
+  </header>
+
+  <main class="page-content">
+    <!-- Verbindungsstatus zum Backend (FE #6, Prüfung über GET /api/v1/ping) -->
+    <section class="status-bar">
+      <span>Backend:</span>
+      <span id="backend-status">wird geprüft …</span>
+    </section>
+
+    <!-- Grund der Weiterleitung (E14) oder Bestätigung der Registrierung (E13) -->
+    <p id="auth-notice" class="auth-notice" role="status" aria-live="polite" hidden></p>
+
+    <div class="auth-grid">
+      <!-- Anmelden (US-01, POST /api/v1/auth/login) -->
+      <section id="login-section" class="card">
+        <h2>Anmelden</h2>
+        <form id="login-form" class="auth-form" novalidate>
+          <div class="field-group">
+            <label for="login-email">E-Mail-Adresse</label>
+            <input id="login-email" name="email" type="email" autocomplete="username" required>
+          </div>
+          <div class="field-group">
+            <label for="login-password">Passwort</label>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <p id="login-error" class="field-error" aria-live="polite"></p>
+          <button type="submit">Anmelden</button>
+        </form>
+      </section>
+
+      <!-- Registrieren (US-01, POST /api/v1/auth/register) -->
+      <section id="register-section" class="card">
+        <h2>Neu hier? Registrieren</h2>
+        <form id="register-form" class="auth-form" novalidate>
+          <div class="field-group">
+            <label for="register-email">E-Mail-Adresse</label>
+            <input id="register-email" name="email" type="email" autocomplete="email" required>
+            <p id="register-email-error" class="field-error" aria-live="polite"></p>
+          </div>
+          <div class="field-group">
+            <label for="register-password">Passwort</label>
+            <input id="register-password" name="password" type="password" autocomplete="new-password"
+                   minlength="8" aria-describedby="register-password-hint" required>
+            <p id="register-password-hint" class="field-hint">Mindestens 8 Zeichen</p>
+            <p id="register-password-error" class="field-error" aria-live="polite"></p>
+          </div>
+          <p id="register-error" class="field-error" aria-live="polite"></p>
+          <button type="submit">Registrieren</button>
+        </form>
+      </section>
+    </div>
+
+    <!-- Bereich für Fehlermeldungen aus der API (error.message) -->
+    <div id="error-message" class="error-message" hidden></div>
+  </main>
+
+  <footer class="site-footer">
+    <p>LookUpStock · DHBW Webprojekt</p>
+  </footer>
+</body>
+</html>

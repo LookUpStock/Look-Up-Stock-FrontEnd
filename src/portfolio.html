@@ -20,6 +20,8 @@
     <nav class="main-nav">
       <a href="index.html" class="nav-link">Simulation</a>
       <a href="portfolio.html" class="nav-link active">Portfolios</a>
+      <!-- Anmeldestatus mit Abmelden (FE #4, US-01) -->
+      <div id="auth-status" class="auth-status"></div>
     </nav>
   </header>
 
@@ -30,10 +32,19 @@
       <span id="backend-status">wird geprüft …</span>
     </section>
 
+
     <!-- Platzhalter für die Anlagensuche (FE #1, US-02, API-Anbindung folgt) -->
+
+    <!-- Anlagensuche (FE #1, US-02, GET /api/v1/assets/search) -->
+    <!-- KI-Log Nr. 19: Suchbereich mit KI erstellt, von Mert Eminel geprüft -->
+
     <section id="asset-search" class="card">
       <h2>Anlagen suchen</h2>
-      <p class="placeholder">Suchfeld mit Trefferliste folgt in FE #1.</p>
+      <label for="asset-search-input" class="search-label">Ticker, ISIN oder Name</label>
+      <input type="search" id="asset-search-input" class="search-input"
+             placeholder="z. B. EUNL, IE00B4L5Y983 oder MSCI World" autocomplete="off">
+      <p id="asset-search-hint" class="search-hint" aria-live="polite"></p>
+      <ul id="asset-search-results" class="search-results"></ul>
     </section>
 
     <!-- Portfolio-Editor mit Gewichtung (FE #2, lokal im Browser) -->

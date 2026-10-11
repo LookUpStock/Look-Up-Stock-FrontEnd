@@ -72,3 +72,31 @@ export function fetchHealth() {
 export function fetchPing() {
   return fetchHealth();
 }
+
+// KI-Log Nr. 19: Suchfunktion mit KI erstellt, von Mert Eminel geprüft (FE #1)
+// Anlagen nach Ticker, ISIN oder Name suchen (GET /api/v1/assets/search, US-02)
+// Ohne limit gilt der Standard des Backends (10 Treffer, erlaubt sind 1 bis 25)
+export function searchAssets(query, limit) {
+  const params = new URLSearchParams({ q: query });
+  if (limit !== undefined) {
+    params.set("limit", String(limit));
+  }
+  return request(`/assets/search?${params}`);
+}
+
+// KI-Log Nr. [eintragen]: Anmelde-Endpunkte mit KI erstellt, von Mert Eminel geprüft (FE #4, US-01)
+// Konto anlegen (POST /api/v1/auth/register); liefert { id, email }, aber keinen Token (E13)
+export function registerUser(email, password) {
+  return request("/auth/register", { method: "POST", body: { email, password } });
+}
+
+// Anmelden (POST /api/v1/auth/login); liefert { token, expiresAt }
+export function loginUser(email, password) {
+  return request("/auth/login", { method: "POST", body: { email, password } });
+}
+
+// Abmelden (POST /api/v1/auth/logout); Token steht laut API-Design im Body, Antwort 204 ohne Body
+export function logoutUser(token) {
+  return request("/auth/logout", { method: "POST", body: { token } });
+
+}
