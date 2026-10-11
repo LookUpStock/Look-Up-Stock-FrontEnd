@@ -1,6 +1,18 @@
 // KI-Log Nr. 23: Einstiegspunkt mit KI erstellt, vom Team geprüft und angepasst
 
-import { fetchPing } from "./api.js";
+import { fetchHealth } from "./api.js";
+
+function normalizeLocalhostOrigin() {
+  if (window.location.hostname !== "127.0.0.1") {
+    return;
+  }
+
+  const targetUrl = new URL(window.location.href);
+  targetUrl.hostname = "localhost";
+  window.location.replace(targetUrl.toString());
+}
+
+normalizeLocalhostOrigin();
 
 import { initAssetSearch } from "./search.js";
 
@@ -38,14 +50,14 @@ async function checkBackendStatus() {
   }
 
   try {
-    await fetchPing();
-    statusElement.textContent = "verbunden";
+    await fetchHealth();
+    statusElement.textContent = "Backend verbunden";
     statusElement.className = "status-ok";
   } catch (error) {
-    statusElement.textContent = "nicht erreichbar";
+    statusElement.textContent = error.message;
     statusElement.className = "status-error";
     // Details für die Fehlersuche in der Konsole
-    console.error("Ping fehlgeschlagen:", error);
+    console.error("Health-Check fehlgeschlagen:", error);
   }
 }
 

@@ -1,7 +1,8 @@
 // KI-Log Nr. 23: API-Schicht mit KI erstellt, vom Team geprüft und angepasst
 
-// Basis-URL des Backends; für das Deployment auf dem Server später anpassen
-export const API_BASE_URL = "http://localhost:8080/api/v1";
+import { API_BASE_URL } from "./config.js";
+
+export { API_BASE_URL };
 
 // Fehler aus der API mit HTTP-Status, Fehlercode, deutscher Meldung und Details
 export class ApiError extends Error {
@@ -18,10 +19,11 @@ export class ApiError extends Error {
 export async function request(path, options = {}) {
   const { method = "GET", body } = options;
   const hasBody = body !== undefined;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
   let response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetch(new URL(normalizedPath, `${API_BASE_URL}/`).href, {
       method,
       // Content-Type nur bei Anfragen mit Body setzen
       headers: hasBody ? { "Content-Type": "application/json" } : {},
@@ -54,9 +56,21 @@ export async function request(path, options = {}) {
   return data;
 }
 
-// Erreichbarkeit des Backends prüfen (GET /api/v1/ping)
+export function getJson(path) {
+  return request(path, { method: "GET" });
+}
+
+export function postJson(path, body) {
+  return request(path, { method: "POST", body });
+}
+
+// Erreichbarkeit des Backends prüfen (GET /api/health)
+export function fetchHealth() {
+  return getJson("/api/health");
+}
+
 export function fetchPing() {
-  return request("/ping");
+  return fetchHealth();
 }
 
 // KI-Log Nr. 19: Suchfunktion mit KI erstellt, von Mert Eminel geprüft (FE #1)
@@ -84,4 +98,5 @@ export function loginUser(email, password) {
 // Abmelden (POST /api/v1/auth/logout); Token steht laut API-Design im Body, Antwort 204 ohne Body
 export function logoutUser(token) {
   return request("/auth/logout", { method: "POST", body: { token } });
+
 }

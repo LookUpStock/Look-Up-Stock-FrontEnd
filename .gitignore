@@ -4,6 +4,8 @@ coverage/
 
 # Lokale Umgebungsvariablen (nur .env.example wird committet)
 .env
+.env.*
+!.env.example
 
 # Betriebssystem-Dateien
 .DS_Store
