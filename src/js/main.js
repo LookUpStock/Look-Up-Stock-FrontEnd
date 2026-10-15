@@ -15,6 +15,7 @@ function normalizeLocalhostOrigin() {
 normalizeLocalhostOrigin();
 
 import { initAssetSearch } from "./search.js";
+import { initPortfolioEditor } from "./portfolio-ui.js";
 import { initSimulationPage } from "./simulation.js";
 
 import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage } from "./auth.js";
@@ -67,6 +68,11 @@ checkBackendStatus();
 
 // Anlagensuche nur auf Seiten mit Suchbereich starten (portfolio.html, FE #1)
 const searchSection = document.getElementById("asset-search");
+const portfolioEditor = document.getElementById("portfolio-editor");
+if (portfolioEditor) {
+  // Der Editor muss vor der Suche auf das asset-selected-Ereignis warten.
+  initPortfolioEditor();
+}
 if (searchSection) {
   initAssetSearch(searchSection);
 }

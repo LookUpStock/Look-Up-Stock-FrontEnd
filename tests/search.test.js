@@ -111,6 +111,12 @@ test("formatAssetDetails skips missing values", () => {
   assert.equal(formatAssetDetails({ symbol: "AAPL", exchange: "NASDAQ" }), "AAPL · NASDAQ");
 });
 
+test("search result contains the asset id needed by the portfolio editor", async () => {
+  const state = await findAssets("EUNL", async () => ({ results: [EUNL] }));
+
+  assert.equal(state.results[0].id, 17);
+});
+
 test("normalizeQuery handles empty input", () => {
   assert.equal(normalizeQuery(undefined), "");
   assert.equal(normalizeQuery("  EUNL "), "EUNL");

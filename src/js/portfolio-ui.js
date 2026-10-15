@@ -391,5 +391,3 @@ export function initPortfolioEditor(rootDocument = document) {
   renderPositions();
   refreshSavedPortfolios();
 }
-
-initPortfolioEditor();
