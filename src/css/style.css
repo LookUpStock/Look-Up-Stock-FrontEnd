@@ -344,6 +344,12 @@ button:disabled {
   color: var(--color-text-muted);
 }
 
+.saved-portfolio-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-small);
+}
+
 /* ===== Simulation (FE #3, US-04) ===== */
 .simulation-form {
   display: flex;
@@ -635,4 +641,3 @@ button:disabled {
   border-color: var(--color-success);
   background-color: #e7f5ec;
 }
-
