@@ -111,11 +111,15 @@ export async function startSimulation(input, token, run = runSimulation) {
 export function summarizeSimulation(result) {
   const last = result.timeline[result.timeline.length - 1];
   const { startCapital, monthlyContribution, horizonYears, seed } = result.parameters;
+  const totalContributions = result.metrics?.totalContributions
+    ?? startCapital + monthlyContribution * horizonYears * 12;
   const rows = [
-    ["Eingezahlt", formatEuro(startCapital + monthlyContribution * horizonYears * 12)],
-    ["Ungünstiger Verlauf (p5)", formatEuro(last.p5)],
-    ["Mittlerer Verlauf (p50)", formatEuro(last.p50)],
-    ["Günstiger Verlauf (p95)", formatEuro(last.p95)],
+    ["Eingezahlt", formatEuro(totalContributions)],
+    ["Ungünstiger Endwert (p5)", formatEuro(result.metrics?.p5EndValue ?? last.p5)],
+    ["Median-Endwert", formatEuro(result.metrics?.medianEndValue ?? last.p50)],
+    ["Günstiger Endwert (p95)", formatEuro(result.metrics?.p95EndValue ?? last.p95)],
+    ["Value at Risk (95 %)", formatEuro(result.metrics?.valueAtRisk95 ?? Math.max(0, totalContributions - last.p5))],
+    ["Maximaler Drawdown (Median)", formatPercent(result.metrics?.maxDrawdownMedian)],
   ];
 
   const from = result.estimates?.historyFrom;
@@ -127,6 +131,11 @@ export function summarizeSimulation(result) {
   notes.push(`Rechenzeit ${result.runtimeMs} ms`);
 
   return { rows, note: notes.join(" · ") };
+}
+
+function formatPercent(value) {
+  if (!Number.isFinite(value)) return "–";
+  return new Intl.NumberFormat("de-DE", { style: "percent", maximumFractionDigits: 2 }).format(value);
 }
 
 function formatDate(isoDate) {
