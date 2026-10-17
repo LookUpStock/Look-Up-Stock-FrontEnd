@@ -121,6 +121,12 @@ test("loadSavedPortfolios returns the list", async () => {
   assert.deepEqual(result, { status: "loaded", portfolios: [{ id: 1 }] });
 });
 
+test("loadSavedPortfolios treats a missing list as empty", async () => {
+  const result = await loadSavedPortfolios("abc", async () => ({}));
+
+  assert.deepEqual(result, { status: "loaded", portfolios: [] });
+});
+
 test("loadSavedPortfolios reports 401 as unauthorized", async () => {
   const list = async () => {
     throw new ApiError(401, "UNAUTHORIZED", "Nicht angemeldet.");

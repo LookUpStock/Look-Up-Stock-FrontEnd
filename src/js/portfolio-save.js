@@ -1,4 +1,4 @@
-// KI-Log Nr. [eintragen]: Speichern und Laden von Portfolios mit KI erstellt, vom Team zu prüfen (US-03)
+// Speichern und Laden von Portfolios (US-03); die Daten bleiben dem angemeldeten Nutzer zugeordnet.
 
 import { savePortfolio, listPortfolios, ApiError } from "./api.js";
 import { isUnauthorized } from "./auth.js";
@@ -47,7 +47,8 @@ export async function submitPortfolio(portfolio, token, save = savePortfolio) {
   }
 }
 
-// Eigene Portfolios laden.
+// Eigene Portfolios laden. Eine fehlende Liste wird als leere Liste behandelt,
+// damit die Oberfläche auch bei einer gültigen Antwort ohne Einträge stabil bleibt.
 // Ergebnis: { status: "loaded", portfolios } | { status: "unauthorized" } | { status: "error", message }
 export async function loadSavedPortfolios(token, list = listPortfolios) {
   if (!token) {

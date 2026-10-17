@@ -193,6 +193,7 @@ export function initSimulationPage(root = document) {
       return;
     }
 
+    // Die Auswahl verwendet die Backend-ID, die der Simulations-Endpunkt erwartet.
     for (const saved of result.portfolios) {
       const option = root.createElement("option");
       option.value = String(saved.id);

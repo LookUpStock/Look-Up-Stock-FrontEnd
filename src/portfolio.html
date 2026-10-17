@@ -46,7 +46,7 @@
       <ul id="asset-search-results" class="search-results"></ul>
     </section>
 
-    <!-- Portfolio-Editor mit Gewichtung (FE #2, lokal im Browser) -->
+    <!-- Portfolio-Editor mit Gewichtung (US-03); Speichern und Auflisten erfolgt im Backend -->
     <section id="portfolio-editor" class="card portfolio-editor">
       <h2>Portfolio bearbeiten</h2>
 
@@ -76,13 +76,14 @@
         <div class="action-row">
           <button id="normalize-weights" type="button">Normalisieren</button>
           <button id="equalize-weights" type="button">Gleichgewichten</button>
-          <!-- Speichern im Backend (US-03, POST /api/v1/portfolios) -->
+          <!-- Neues Portfolio im Backend speichern (US-03, POST /api/v1/portfolios) -->
           <button id="save-portfolio" type="button">Speichern</button>
         </div>
         <p id="portfolio-save-status" class="summary-status" role="status" aria-live="polite"></p>
       </form>
 
-      <!-- Eigene Portfolios (POST /api/v1/portfolios/list); "Laden" übernimmt sie in den Editor -->
+      <!-- Eigene Portfolios aus dem Backend (POST /api/v1/portfolios/list);
+           "Laden" übernimmt ein Portfolio zur Ansicht bzw. weiteren Bearbeitung -->
       <div class="saved-portfolios">
         <h3>Gespeicherte Portfolios</h3>
         <p id="saved-portfolios-hint" class="search-hint" aria-live="polite"></p>
