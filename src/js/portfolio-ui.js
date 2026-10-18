@@ -13,6 +13,8 @@ import {
   formatSavedDetails,
   loadSavedPortfolios,
   missingAssetErrors,
+  editPortfolio,
+  removePortfolio,
   submitPortfolio,
   toEditorDraft,
 } from "./portfolio-save.js";
@@ -84,6 +86,7 @@ export function initPortfolioEditor(rootDocument = document) {
   }
 
   const state = createInitialState();
+  let editingPortfolioId = null;
   const portfolioNameInput = rootDocument.getElementById("portfolio-name");
   const portfolioNameError = rootDocument.getElementById("portfolio-name-error");
   const positionsList = rootDocument.getElementById("positions-list");
@@ -312,7 +315,9 @@ export function initPortfolioEditor(rootDocument = document) {
 
     saveButton.disabled = true;
     setSaveStatus(MESSAGES.saving, false);
-    const result = await submitPortfolio(portfolio, getToken());
+    const result = editingPortfolioId == null
+      ? await submitPortfolio(portfolio, getToken())
+      : await editPortfolio(editingPortfolioId, portfolio, getToken());
     saveButton.disabled = false;
 
     if (result.status === "unauthorized") {
@@ -324,7 +329,7 @@ export function initPortfolioEditor(rootDocument = document) {
       return;
     }
 
-    setSaveStatus(MESSAGES.saved, false);
+    setSaveStatus(editingPortfolioId == null ? MESSAGES.saved : MESSAGES.updated, false);
     // Liste aktualisieren, damit das neue Portfolio auch zum Laden und Simulieren bereitsteht.
     refreshSavedPortfolios();
   });
@@ -332,6 +337,7 @@ export function initPortfolioEditor(rootDocument = document) {
   function loadIntoEditor(saved) {
     // Gespeicherte API-Daten als bearbeitbaren Entwurf in den Editor übernehmen.
     const draft = toEditorDraft(saved);
+    editingPortfolioId = saved.id;
     state.name = draft.name;
     state.positions = draft.positions.map(createDraftPosition);
     setSaveStatus("", false);
@@ -358,10 +364,44 @@ export function initPortfolioEditor(rootDocument = document) {
 
       const button = rootDocument.createElement("button");
       button.type = "button";
-      button.textContent = "Laden";
+      button.textContent = "Bearbeiten";
       button.addEventListener("click", () => loadIntoEditor(saved));
 
-      item.append(text, button);
+      const actions = rootDocument.createElement("div");
+      actions.className = "saved-portfolio-actions";
+      actions.append(button);
+
+      const deleteButton = rootDocument.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "button-danger";
+      deleteButton.textContent = "Löschen";
+      deleteButton.addEventListener("click", async () => {
+        if (!rootDocument.defaultView.confirm(`Portfolio "${saved.name}" wirklich löschen?`)) {
+          return;
+        }
+
+        deleteButton.disabled = true;
+        const result = await removePortfolio(saved.id, getToken());
+        deleteButton.disabled = false;
+
+        if (result.status === "unauthorized") {
+          redirectToLogin();
+          return;
+        }
+        if (result.status === "error") {
+          setSaveStatus(result.message, true);
+          return;
+        }
+
+        if (editingPortfolioId === saved.id) {
+          editingPortfolioId = null;
+        }
+        setSaveStatus(MESSAGES.deleted, false);
+        refreshSavedPortfolios();
+      });
+      actions.append(deleteButton);
+
+      item.append(text, actions);
       savedListElement.append(item);
     }
   }

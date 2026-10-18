@@ -1,6 +1,6 @@
 // KI-Log Nr. [eintragen]: Speichern und Laden von Portfolios mit KI erstellt, vom Team zu prüfen (US-03)
 
-import { savePortfolio, listPortfolios, ApiError } from "./api.js";
+import { savePortfolio, updatePortfolio, deletePortfolio, listPortfolios, ApiError } from "./api.js";
 import { isUnauthorized } from "./auth.js";
 import { formatWeightInput } from "./portfolio.js";
 
@@ -9,6 +9,8 @@ export const MESSAGES = {
   fixErrors: "Bitte zuerst die markierten Fehler beheben.",
   saving: "Portfolio wird gespeichert …",
   saved: "Portfolio gespeichert.",
+  updated: "Portfolio aktualisiert.",
+  deleted: "Portfolio gelöscht.",
   loading: "Gespeicherte Portfolios werden geladen …",
   noPortfolios: "Noch keine Portfolios gespeichert.",
   unexpected: "Ein unerwarteter Fehler ist aufgetreten.",
@@ -39,6 +41,35 @@ export async function submitPortfolio(portfolio, token, save = savePortfolio) {
   try {
     const saved = await save(token, portfolio.name, portfolio.positions);
     return { status: "saved", portfolio: saved };
+  } catch (error) {
+    if (isUnauthorized(error)) {
+      return { status: "unauthorized" };
+    }
+    return { status: "error", message: errorMessageFrom(error) };
+  }
+}
+
+export async function editPortfolio(id, portfolio, token, update = updatePortfolio) {
+  if (!token) {
+    return { status: "unauthorized" };
+  }
+  try {
+    return { status: "saved", portfolio: await update(token, id, portfolio.name, portfolio.positions) };
+  } catch (error) {
+    if (isUnauthorized(error)) {
+      return { status: "unauthorized" };
+    }
+    return { status: "error", message: errorMessageFrom(error) };
+  }
+}
+
+export async function removePortfolio(id, token, remove = deletePortfolio) {
+  if (!token) {
+    return { status: "unauthorized" };
+  }
+  try {
+    await remove(token, id);
+    return { status: "deleted" };
   } catch (error) {
     if (isUnauthorized(error)) {
       return { status: "unauthorized" };

@@ -109,6 +109,19 @@ export function savePortfolio(token, name, positions) {
   });
 }
 
+// Portfolio ändern (PUT /api/v1/portfolios/{id})
+export function updatePortfolio(token, id, name, positions) {
+  return request(`/portfolios/${id}`, {
+    method: "PUT",
+    body: { token, name, positions: positions.map((p) => ({ assetId: p.assetId, weight: p.weightPct })) },
+  });
+}
+
+// Portfolio löschen (DELETE /api/v1/portfolios/{id})
+export function deletePortfolio(token, id) {
+  return request(`/portfolios/${id}`, { method: "DELETE", body: { token } });
+}
+
 // Eigene Portfolios laden (POST /api/v1/portfolios/list); liefert { portfolios: [...] }, neueste zuerst
 export function listPortfolios(token) {
   return request("/portfolios/list", { method: "POST", body: { token } });

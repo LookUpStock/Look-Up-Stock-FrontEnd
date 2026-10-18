@@ -2,7 +2,14 @@
 
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { savePortfolio, listPortfolios, ApiError, API_BASE_URL } from "../src/js/api.js";
+import {
+  deletePortfolio,
+  listPortfolios,
+  savePortfolio,
+  updatePortfolio,
+  ApiError,
+  API_BASE_URL,
+} from "../src/js/api.js";
 import { createPortfolio, createPosition } from "../src/js/portfolio.js";
 import {
   MESSAGES,
@@ -56,6 +63,35 @@ test("listPortfolios posts the token to the list endpoint", async () => {
   assert.equal(url, `${API_BASE_URL}/api/v1/portfolios/list`);
   assert.deepEqual(JSON.parse(options.body), { token: "abc" });
   assert.deepEqual(result, { portfolios: [] });
+});
+
+test("updatePortfolio sends the portfolio id, token and positions", async () => {
+  const fetchMock = mockFetchResponse(200, { id: 1 });
+
+  await updatePortfolio("abc", 1, portfolio.name, portfolio.positions);
+
+  const [url, options] = fetchMock.mock.calls[0].arguments;
+  assert.equal(url, `${API_BASE_URL}/api/v1/portfolios/1`);
+  assert.equal(options.method, "PUT");
+  assert.deepEqual(JSON.parse(options.body), {
+    token: "abc",
+    name: "Welt",
+    positions: [
+      { assetId: 3, weight: 70 },
+      { assetId: 8, weight: 30 },
+    ],
+  });
+});
+
+test("deletePortfolio sends the token to the portfolio endpoint", async () => {
+  const fetchMock = mock.method(globalThis, "fetch", async () => new Response(null, { status: 204 }));
+
+  await deletePortfolio("abc", 1);
+
+  const [url, options] = fetchMock.mock.calls[0].arguments;
+  assert.equal(url, `${API_BASE_URL}/api/v1/portfolios/1`);
+  assert.equal(options.method, "DELETE");
+  assert.deepEqual(JSON.parse(options.body), { token: "abc" });
 });
 
 test("createPosition keeps the assetId from the search", () => {
