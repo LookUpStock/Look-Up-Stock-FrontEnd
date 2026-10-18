@@ -452,6 +452,31 @@ button:disabled {
   font-weight: 700;
 }
 
+/* Vergleich zweier Anlagen oder Portfolios mit gemeinsamen Parametern */
+.comparison-choices, .comparison-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-medium);
+}
+
+.comparison-choice {
+  min-width: 0;
+  padding: var(--spacing-medium);
+  border: 1px solid var(--color-border, #d8dee8);
+  border-radius: var(--radius);
+}
+
+.comparison-choice legend { font-weight: 700; padding: 0 0.35rem; }
+.comparison-choice label { display: grid; gap: 0.35rem; margin: 0.6rem 0; }
+.comparison-choice input, .comparison-choice select { width: 100%; }
+.comparison-result-card { min-width: 0; }
+.comparison-result-card h3 { overflow-wrap: anywhere; }
+.comparison-pairwise { font-weight: 600; }
+
+@media (max-width: 760px) {
+  .comparison-choices, .comparison-results { grid-template-columns: 1fr; }
+}
+
 /* ===== Fußzeile ===== */
 .site-footer {
   padding: var(--spacing-medium);
