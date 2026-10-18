@@ -325,10 +325,12 @@ export function initPortfolioEditor(rootDocument = document) {
     }
 
     setSaveStatus(MESSAGES.saved, false);
+    // Liste aktualisieren, damit das neue Portfolio auch zum Laden und Simulieren bereitsteht.
     refreshSavedPortfolios();
   });
 
   function loadIntoEditor(saved) {
+    // Gespeicherte API-Daten als bearbeitbaren Entwurf in den Editor übernehmen.
     const draft = toEditorDraft(saved);
     state.name = draft.name;
     state.positions = draft.positions.map(createDraftPosition);

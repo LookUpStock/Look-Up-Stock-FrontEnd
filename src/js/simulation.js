@@ -213,6 +213,7 @@ export function initSimulationPage(root = document) {
       return;
     }
 
+    // Die Portfolio-ID bleibt als Auswahlwert erhalten und wird an die Simulation übergeben.
     for (const saved of result.portfolios) {
       const option = root.createElement("option");
       option.value = String(saved.id);
