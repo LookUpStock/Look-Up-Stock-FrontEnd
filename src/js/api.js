@@ -142,3 +142,8 @@ export function deleteSavedSimulation(token, simulationId) {
 export function runSimulation(token, portfolioId, parameters) {
   return request("/simulations", { method: "POST", body: { token, portfolioId, parameters } });
 }
+
+// Zwei Portfolios oder Einzelanlagen mit denselben Parametern vergleichen (US-07).
+export function runComparison(token, items, parameters) {
+  return request("/comparisons", { method: "POST", body: { token, items, parameters, save: false, name: null } });
+}
