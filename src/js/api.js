@@ -114,6 +114,28 @@ export function listPortfolios(token) {
   return request("/portfolios/list", { method: "POST", body: { token } });
 }
 
+// KI-Log ME-40: Endpunkte für gespeicherte Simulationen mit KI erstellt, von Mert Eminel geprüft (FE #17, US-08)
+// Simulation berechnen und unter einem Namen speichern (POST /api/v1/simulations mit save: true, 201).
+// Mit dem Seed der angezeigten Simulation entsteht dasselbe Ergebnis (E32, NF-08).
+export function saveSimulation(token, portfolioId, parameters, name) {
+  return request("/simulations", { method: "POST", body: { token, portfolioId, parameters, save: true, name } });
+}
+
+// Eigene gespeicherte Simulationen laden (POST /api/v1/simulations/list); liefert { simulations: [...] }, neueste zuerst
+export function listSavedSimulations(token) {
+  return request("/simulations/list", { method: "POST", body: { token } });
+}
+
+// Gespeicherte Simulation ohne Neuberechnung abrufen (POST /api/v1/simulations/{id}/details)
+export function fetchSavedSimulation(token, simulationId) {
+  return request(`/simulations/${encodeURIComponent(simulationId)}/details`, { method: "POST", body: { token } });
+}
+
+// Gespeicherte Simulation löschen (DELETE /api/v1/simulations/{id}); Token im Body, Antwort 204
+export function deleteSavedSimulation(token, simulationId) {
+  return request(`/simulations/${encodeURIComponent(simulationId)}`, { method: "DELETE", body: { token } });
+}
+
 // Monte-Carlo-Simulation starten (POST /api/v1/simulations, US-04).
 // parameters: { startCapital, monthlyContribution, horizonYears, paths, seed }; seed darf fehlen.
 // Liefert u. a. timeline: [{ month, p5, p50, p95 }] für das Fächerdiagramm.

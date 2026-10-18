@@ -302,6 +302,39 @@ button:disabled {
   gap: var(--spacing-small);
 }
 
+/* Gespeicherte Simulationen (FE #17, US-08); Listeneinträge wie bei den Portfolios */
+.saved-portfolio .saved-simulation-actions {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: var(--spacing-small);
+}
+
+.simulation-save-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+  margin-top: var(--spacing-medium);
+  padding-top: var(--spacing-medium);
+  border-top: 1px solid var(--color-border);
+}
+
+.simulation-save-form input {
+  max-width: 28rem;
+}
+
+.simulation-opened-info {
+  margin: var(--spacing-medium) 0 0;
+  font-weight: 600;
+}
+
+@media (max-width: 520px) {
+  #saved-simulations-list .saved-portfolio {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 /* Gespeicherte Portfolios (US-03) */
 .saved-portfolios {
   margin-top: var(--spacing-medium);

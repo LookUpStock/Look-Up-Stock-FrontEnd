@@ -87,6 +87,29 @@
       <div id="simulation-chart" class="fan-chart-container"></div>
       <dl id="simulation-summary" class="simulation-summary"></dl>
       <p id="simulation-note" class="search-hint"></p>
+
+      <!-- Hinweis bei einer geöffneten gespeicherten Simulation (FE #17, US-08) -->
+      <p id="simulation-opened-info" class="simulation-opened-info" hidden></p>
+
+      <!-- Simulation unter einem Namen speichern (FE #17, US-08, E32) -->
+      <form id="simulation-save-form" class="simulation-save-form" novalidate hidden>
+        <div class="field-group">
+          <label for="simulation-save-name">Name der Simulation</label>
+          <input id="simulation-save-name" name="name" type="text" autocomplete="off" placeholder="z. B. Sparplan 20 Jahre">
+          <p id="simulation-save-name-error" class="field-error" aria-live="polite"></p>
+        </div>
+        <div class="action-row">
+          <button type="submit">Simulation speichern</button>
+        </div>
+        <p id="simulation-save-status" class="summary-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- Liste der gespeicherten Simulationen, neueste zuerst (FE #17, US-08) -->
+    <section id="saved-simulations" class="card">
+      <h2>Gespeicherte Simulationen</h2>
+      <p id="saved-simulations-hint" class="search-hint" aria-live="polite"></p>
+      <ul id="saved-simulations-list" class="saved-portfolios-list"></ul>
     </section>
 
     <!-- Bereich für Fehlermeldungen aus der API (error.message) -->
