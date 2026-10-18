@@ -4,6 +4,7 @@ import { runSimulation, ApiError } from "./api.js";
 import { clearSession, getToken, isUnauthorized, loginPageUrl, REASONS, MESSAGES as AUTH_MESSAGES } from "./auth.js";
 import { loadSavedPortfolios } from "./portfolio-save.js";
 import { formatEuro, renderFanChart } from "./chart.js";
+import { initSavedSimulations } from "./saved-simulations.js";
 
 // Grenzwerte und Standardwerte laut API-Design (wie SimulationParameters im Backend)
 export const LIMITS = { minHorizon: 1, maxHorizon: 40, minPaths: 1000, maxPaths: 50000 };
@@ -172,6 +173,14 @@ export function initSimulationPage(root = document) {
     window.location.assign(loginPageUrl(REASONS.expired, "index.html"));
   }
 
+  // Gespeicherte Simulationen (FE #17, US-08): Speichern, Liste, Öffnen und Löschen
+  const savedSimulations = initSavedSimulations(root, {
+    getToken,
+    onUnauthorized: redirectToLogin,
+    onOpen: showSavedSimulation,
+    confirm: (text) => window.confirm(text),
+  });
+
   function showErrors(errors = {}) {
     for (const field of FIELDS) {
       const errorElement = root.getElementById(`simulation-${field}-error`);
@@ -199,6 +208,8 @@ export function initSimulationPage(root = document) {
     }
     if (result.status === "error") {
       portfolioHint.textContent = result.message;
+      // Liste trotzdem laden; ohne Namen erscheint „Portfolio <id>“
+      savedSimulations.refresh();
       return;
     }
 
@@ -208,6 +219,10 @@ export function initSimulationPage(root = document) {
       option.textContent = saved.name;
       select.append(option);
     }
+
+    // Portfolionamen für die Liste der gespeicherten Simulationen (FE #17)
+    savedSimulations.setPortfolioNames(new Map(result.portfolios.map((saved) => [saved.id, saved.name])));
+    savedSimulations.refresh();
 
     if (result.portfolios.length === 0) {
       const link = root.createElement("a");
@@ -235,6 +250,27 @@ export function initSimulationPage(root = document) {
     noteElement.textContent = summary.note;
   }
 
+  function showResult(result) {
+    resultSection.hidden = false;
+    renderFanChart(chartContainer, result.timeline);
+    renderSummary(result);
+  }
+
+  // Gespeicherte Simulation anzeigen: Eingaben wie beim Speichern, Ergebnis ohne Neuberechnung (E32)
+  function showSavedSimulation(simulation) {
+    const { startCapital, monthlyContribution, horizonYears, paths, seed } = simulation.parameters;
+    inputs.portfolioId.value = String(simulation.portfolioId);
+    inputs.startCapital.value = String(startCapital);
+    inputs.monthlyContribution.value = String(monthlyContribution);
+    inputs.horizonYears.value = String(horizonYears);
+    inputs.paths.value = String(paths);
+    inputs.seed.value = String(seed);
+    showErrors();
+    setStatus("");
+    showResult(simulation);
+    resultSection.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = Object.fromEntries(FIELDS.map((field) => [field, inputs[field].value]));
@@ -260,9 +296,8 @@ export function initSimulationPage(root = document) {
     }
 
     setStatus("");
-    resultSection.hidden = false;
-    renderFanChart(chartContainer, outcome.result.timeline);
-    renderSummary(outcome.result);
+    showResult(outcome.result);
+    savedSimulations.offerSave(outcome.result);
   });
 
   loadPortfolios();
