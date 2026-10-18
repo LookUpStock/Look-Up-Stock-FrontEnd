@@ -17,6 +17,7 @@ normalizeLocalhostOrigin();
 import { initAssetSearch } from "./search.js";
 import { initPortfolioEditor } from "./portfolio-ui.js";
 import { initSimulationPage } from "./simulation.js";
+import { initComparisonPage } from "./comparison.js";
 
 import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage } from "./auth.js";
 
@@ -80,4 +81,8 @@ if (searchSection) {
 // Simulation nur auf der Simulationsseite starten (index.html, FE #3, US-04)
 if (document.getElementById("simulation-form") && session.status === "valid") {
   initSimulationPage();
+}
+
+if (document.getElementById("comparison-form") && session.status === "valid") {
+  initComparisonPage();
 }

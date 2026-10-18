@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LookUpStock – Vergleich</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-requires-login="true">
+  <header class="site-header">
+    <a href="index.html" class="logo">LookUpStock</a>
+    <nav class="main-nav">
+      <a href="index.html" class="nav-link">Simulation</a>
+      <a href="portfolio.html" class="nav-link">Portfolios</a>
+      <a href="compare.html" class="nav-link active">Vergleich</a>
+      <div id="auth-status" class="auth-status"></div>
+    </nav>
+  </header>
+  <main class="page-content">
+    <section class="status-bar"><span>Backend:</span><span id="backend-status">wird geprüft …</span></section>
+    <section class="card">
+      <h2>Vergleich zusammenstellen</h2>
+      <p id="comparison-load-hint" class="search-hint" aria-live="polite"></p>
+      <form id="comparison-form" novalidate>
+        <div class="comparison-choices">
+          <fieldset class="comparison-choice">
+            <legend>Erste Auswahl</legend>
+            <label>Art der Auswahl
+              <select name="itemType"><option value="portfolio">Gespeichertes Portfolio</option><option value="asset">Einzelne Anlage</option></select>
+            </label>
+            <div class="portfolio-choice field-group"><label>Portfolio<select name="portfolioId"><option value="">Portfolio auswählen</option></select></label></div>
+            <div class="asset-choice field-group" hidden>
+              <label>Anlage suchen<input name="assetQuery" type="search" placeholder="Ticker, ISIN oder Name"></label>
+              <button type="button" class="asset-search-button">Suchen</button>
+              <label>Suchergebnis<select name="assetId"><option value="">Anlage auswählen</option></select></label>
+              <p class="asset-search-hint search-hint" aria-live="polite"></p>
+            </div>
+          </fieldset>
+          <fieldset class="comparison-choice">
+            <legend>Zweite Auswahl</legend>
+            <label>Art der Auswahl
+              <select name="itemType"><option value="portfolio">Gespeichertes Portfolio</option><option value="asset">Einzelne Anlage</option></select>
+            </label>
+            <div class="portfolio-choice field-group"><label>Portfolio<select name="portfolioId"><option value="">Portfolio auswählen</option></select></label></div>
+            <div class="asset-choice field-group" hidden>
+              <label>Anlage suchen<input name="assetQuery" type="search" placeholder="Ticker, ISIN oder Name"></label>
+              <button type="button" class="asset-search-button">Suchen</button>
+              <label>Suchergebnis<select name="assetId"><option value="">Anlage auswählen</option></select></label>
+              <p class="asset-search-hint search-hint" aria-live="polite"></p>
+            </div>
+          </fieldset>
+        </div>
+        <h3>Gemeinsame Simulationsparameter</h3>
+        <div class="simulation-grid">
+          <div class="field-group"><label>Startkapital in €<input name="startCapital" inputmode="decimal" required></label><p id="compare-startCapital-error" class="field-error" aria-live="polite"></p></div>
+          <div class="field-group"><label>Monatliche Sparrate in €<input name="monthlyContribution" inputmode="decimal" required></label><p id="compare-monthlyContribution-error" class="field-error" aria-live="polite"></p></div>
+          <div class="field-group"><label>Anlagehorizont in Jahren (1–40)<input name="horizonYears" inputmode="numeric" required></label><p id="compare-horizonYears-error" class="field-error" aria-live="polite"></p></div>
+          <div class="field-group"><label>Simulationspfade (1.000–50.000)<input name="paths" inputmode="numeric" required></label><p id="compare-paths-error" class="field-error" aria-live="polite"></p></div>
+          <div class="field-group"><label>Seed (optional)<input name="seed" inputmode="numeric" placeholder="zufällig"></label><p id="compare-seed-error" class="field-error" aria-live="polite"></p></div>
+        </div>
+        <button type="submit">Vergleich berechnen</button>
+        <p id="comparison-status" class="summary-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section id="comparison-result" class="card" hidden>
+      <h2>Ergebnisse im Vergleich</h2>
+      <p id="comparison-pairwise" class="comparison-pairwise" aria-live="polite"></p>
+      <div id="comparison-results" class="comparison-results"></div>
+    </section>
+  </main>
+  <footer class="site-footer"><p>LookUpStock · DHBW Webprojekt</p></footer>
+</body>
+</html>

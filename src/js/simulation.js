@@ -4,6 +4,7 @@ import { runSimulation, ApiError } from "./api.js";
 import { clearSession, getToken, isUnauthorized, loginPageUrl, REASONS, MESSAGES as AUTH_MESSAGES } from "./auth.js";
 import { loadSavedPortfolios } from "./portfolio-save.js";
 import { formatEuro, renderFanChart } from "./chart.js";
+import { initSavedSimulations } from "./saved-simulations.js";
 
 // Grenzwerte und Standardwerte laut API-Design (wie SimulationParameters im Backend)
 export const LIMITS = { minHorizon: 1, maxHorizon: 40, minPaths: 1000, maxPaths: 50000 };
@@ -111,11 +112,15 @@ export async function startSimulation(input, token, run = runSimulation) {
 export function summarizeSimulation(result) {
   const last = result.timeline[result.timeline.length - 1];
   const { startCapital, monthlyContribution, horizonYears, seed } = result.parameters;
+  const totalContributions = result.metrics?.totalContributions
+    ?? startCapital + monthlyContribution * horizonYears * 12;
   const rows = [
-    ["Eingezahlt", formatEuro(startCapital + monthlyContribution * horizonYears * 12)],
-    ["Ungünstiger Verlauf (p5)", formatEuro(last.p5)],
-    ["Mittlerer Verlauf (p50)", formatEuro(last.p50)],
-    ["Günstiger Verlauf (p95)", formatEuro(last.p95)],
+    ["Eingezahlt", formatEuro(totalContributions)],
+    ["Ungünstiger Endwert (p5)", formatEuro(result.metrics?.p5EndValue ?? last.p5)],
+    ["Median-Endwert", formatEuro(result.metrics?.medianEndValue ?? last.p50)],
+    ["Günstiger Endwert (p95)", formatEuro(result.metrics?.p95EndValue ?? last.p95)],
+    ["Value at Risk (95 %)", formatEuro(result.metrics?.valueAtRisk95 ?? Math.max(0, totalContributions - last.p5))],
+    ["Maximaler Drawdown (Median)", formatPercent(result.metrics?.maxDrawdownMedian)],
   ];
 
   const from = result.estimates?.historyFrom;
@@ -127,6 +132,11 @@ export function summarizeSimulation(result) {
   notes.push(`Rechenzeit ${result.runtimeMs} ms`);
 
   return { rows, note: notes.join(" · ") };
+}
+
+function formatPercent(value) {
+  if (!Number.isFinite(value)) return "–";
+  return new Intl.NumberFormat("de-DE", { style: "percent", maximumFractionDigits: 2 }).format(value);
 }
 
 function formatDate(isoDate) {
@@ -163,6 +173,14 @@ export function initSimulationPage(root = document) {
     window.location.assign(loginPageUrl(REASONS.expired, "index.html"));
   }
 
+  // Gespeicherte Simulationen (FE #17, US-08): Speichern, Liste, Öffnen und Löschen
+  const savedSimulations = initSavedSimulations(root, {
+    getToken,
+    onUnauthorized: redirectToLogin,
+    onOpen: showSavedSimulation,
+    confirm: (text) => window.confirm(text),
+  });
+
   function showErrors(errors = {}) {
     for (const field of FIELDS) {
       const errorElement = root.getElementById(`simulation-${field}-error`);
@@ -190,15 +208,22 @@ export function initSimulationPage(root = document) {
     }
     if (result.status === "error") {
       portfolioHint.textContent = result.message;
+      // Liste trotzdem laden; ohne Namen erscheint „Portfolio <id>“
+      savedSimulations.refresh();
       return;
     }
 
+    // Die Portfolio-ID bleibt als Auswahlwert erhalten und wird an die Simulation übergeben.
     for (const saved of result.portfolios) {
       const option = root.createElement("option");
       option.value = String(saved.id);
       option.textContent = saved.name;
       select.append(option);
     }
+
+    // Portfolionamen für die Liste der gespeicherten Simulationen (FE #17)
+    savedSimulations.setPortfolioNames(new Map(result.portfolios.map((saved) => [saved.id, saved.name])));
+    savedSimulations.refresh();
 
     if (result.portfolios.length === 0) {
       const link = root.createElement("a");
@@ -226,6 +251,27 @@ export function initSimulationPage(root = document) {
     noteElement.textContent = summary.note;
   }
 
+  function showResult(result) {
+    resultSection.hidden = false;
+    renderFanChart(chartContainer, result.timeline);
+    renderSummary(result);
+  }
+
+  // Gespeicherte Simulation anzeigen: Eingaben wie beim Speichern, Ergebnis ohne Neuberechnung (E32)
+  function showSavedSimulation(simulation) {
+    const { startCapital, monthlyContribution, horizonYears, paths, seed } = simulation.parameters;
+    inputs.portfolioId.value = String(simulation.portfolioId);
+    inputs.startCapital.value = String(startCapital);
+    inputs.monthlyContribution.value = String(monthlyContribution);
+    inputs.horizonYears.value = String(horizonYears);
+    inputs.paths.value = String(paths);
+    inputs.seed.value = String(seed);
+    showErrors();
+    setStatus("");
+    showResult(simulation);
+    resultSection.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = Object.fromEntries(FIELDS.map((field) => [field, inputs[field].value]));
@@ -251,9 +297,8 @@ export function initSimulationPage(root = document) {
     }
 
     setStatus("");
-    resultSection.hidden = false;
-    renderFanChart(chartContainer, outcome.result.timeline);
-    renderSummary(outcome.result);
+    showResult(outcome.result);
+    savedSimulations.offerSave(outcome.result);
   });
 
   loadPortfolios();

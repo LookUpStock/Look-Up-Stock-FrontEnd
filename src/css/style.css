@@ -302,6 +302,39 @@ button:disabled {
   gap: var(--spacing-small);
 }
 
+/* Gespeicherte Simulationen (FE #17, US-08); Listeneinträge wie bei den Portfolios */
+.saved-portfolio .saved-simulation-actions {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: var(--spacing-small);
+}
+
+.simulation-save-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+  margin-top: var(--spacing-medium);
+  padding-top: var(--spacing-medium);
+  border-top: 1px solid var(--color-border);
+}
+
+.simulation-save-form input {
+  max-width: 28rem;
+}
+
+.simulation-opened-info {
+  margin: var(--spacing-medium) 0 0;
+  font-weight: 600;
+}
+
+@media (max-width: 520px) {
+  #saved-simulations-list .saved-portfolio {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 /* Gespeicherte Portfolios (US-03) */
 .saved-portfolios {
   margin-top: var(--spacing-medium);
@@ -456,6 +489,31 @@ button:disabled {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
+}
+
+/* Vergleich zweier Anlagen oder Portfolios mit gemeinsamen Parametern */
+.comparison-choices, .comparison-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-medium);
+}
+
+.comparison-choice {
+  min-width: 0;
+  padding: var(--spacing-medium);
+  border: 1px solid var(--color-border, #d8dee8);
+  border-radius: var(--radius);
+}
+
+.comparison-choice legend { font-weight: 700; padding: 0 0.35rem; }
+.comparison-choice label { display: grid; gap: 0.35rem; margin: 0.6rem 0; }
+.comparison-choice input, .comparison-choice select { width: 100%; }
+.comparison-result-card { min-width: 0; }
+.comparison-result-card h3 { overflow-wrap: anywhere; }
+.comparison-pairwise { font-weight: 600; }
+
+@media (max-width: 760px) {
+  .comparison-choices, .comparison-results { grid-template-columns: 1fr; }
 }
 
 /* ===== Fußzeile ===== */

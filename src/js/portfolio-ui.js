@@ -330,10 +330,12 @@ export function initPortfolioEditor(rootDocument = document) {
     }
 
     setSaveStatus(editingPortfolioId == null ? MESSAGES.saved : MESSAGES.updated, false);
+    // Liste aktualisieren, damit das neue Portfolio auch zum Laden und Simulieren bereitsteht.
     refreshSavedPortfolios();
   });
 
   function loadIntoEditor(saved) {
+    // Gespeicherte API-Daten als bearbeitbaren Entwurf in den Editor übernehmen.
     const draft = toEditorDraft(saved);
     editingPortfolioId = saved.id;
     state.name = draft.name;

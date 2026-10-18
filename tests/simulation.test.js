@@ -139,13 +139,17 @@ test("summarizeSimulation shows paid-in amount, final percentiles and notes", ()
 
   assert.deepEqual(summary.rows.map(([label]) => label), [
     "Eingezahlt",
-    "Ungünstiger Verlauf (p5)",
-    "Mittlerer Verlauf (p50)",
-    "Günstiger Verlauf (p95)",
+    "Ungünstiger Endwert (p5)",
+    "Median-Endwert",
+    "Günstiger Endwert (p95)",
+    "Value at Risk (95 %)",
+    "Maximaler Drawdown (Median)",
   ]);
   // 10.000 € + 24 × 200 €
   assert.match(summary.rows[0][1], /^14\.800\s€$/);
   assert.match(summary.rows[2][1], /^15\.000\s€$/);
+  assert.match(summary.rows[4][1], /^2\.800\s€$/);
+  assert.equal(summary.rows[5][1], "–");
   assert.equal(summary.note, "10.000 Pfade · Seed 42 · Kursdaten 01.10.2016 bis 30.09.2026 · Rechenzeit 85 ms");
 });
 
