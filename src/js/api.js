@@ -17,16 +17,21 @@ export class ApiError extends Error {
 
 // Zentrale Funktion für alle Anfragen an das Backend
 export async function request(path, options = {}) {
-  const { method = "GET", body } = options;
+  const { method = "GET", body, token } = options;
   const hasBody = body !== undefined;
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  // Content-Type nur bei Anfragen mit Body setzen
+  const headers = {};
+  if (hasBody) headers["Content-Type"] = "application/json";
+  // Token nur bei geschützten Endpunkten als Bearer-Header mitschicken (ADR-06)
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   let response;
   try {
     response = await fetch(`${API_BASE_URL}${API_PREFIX}${normalizedPath}`, {
       method,
-      // Content-Type nur bei Anfragen mit Body setzen
-      headers: hasBody ? { "Content-Type": "application/json" } : {},
+      headers,
       body: hasBody ? JSON.stringify(body) : undefined,
     });
   } catch (networkError) {
@@ -95,9 +100,9 @@ export function loginUser(email, password) {
   return request("/auth/login", { method: "POST", body: { email, password } });
 }
 
-// Abmelden (POST /api/v1/auth/logout); Token steht laut API-Design im Body, Antwort 204 ohne Body
+// Abmelden (POST /api/v1/auth/logout); Token im Authorization-Header, Antwort 204 ohne Body
 export function logoutUser(token) {
-  return request("/auth/logout", { method: "POST", body: { token } });
+  return request("/auth/logout", { method: "POST", token });
 }
 
 // Portfolio speichern (POST /api/v1/portfolios, US-03); liefert das gespeicherte Portfolio (201).
@@ -105,7 +110,8 @@ export function logoutUser(token) {
 export function savePortfolio(token, name, positions) {
   return request("/portfolios", {
     method: "POST",
-    body: { token, name, positions: positions.map((p) => ({ assetId: p.assetId, weight: p.weightPct })) },
+    token,
+    body: { name, positions: positions.map((p) => ({ assetId: p.assetId, weight: p.weightPct })) },
   });
 }
 
@@ -113,50 +119,51 @@ export function savePortfolio(token, name, positions) {
 export function updatePortfolio(token, id, name, positions) {
   return request(`/portfolios/${id}`, {
     method: "PUT",
-    body: { token, name, positions: positions.map((p) => ({ assetId: p.assetId, weight: p.weightPct })) },
+    token,
+    body: { name, positions: positions.map((p) => ({ assetId: p.assetId, weight: p.weightPct })) },
   });
 }
 
 // Portfolio löschen (DELETE /api/v1/portfolios/{id})
 export function deletePortfolio(token, id) {
-  return request(`/portfolios/${id}`, { method: "DELETE", body: { token } });
+  return request(`/portfolios/${id}`, { method: "DELETE", token });
 }
 
-// Eigene Portfolios laden (POST /api/v1/portfolios/list); liefert { portfolios: [...] }, neueste zuerst
+// Eigene Portfolios laden (GET /api/v1/portfolios); liefert { portfolios: [...] }, neueste zuerst
 export function listPortfolios(token) {
-  return request("/portfolios/list", { method: "POST", body: { token } });
+  return request("/portfolios", { token });
 }
 
 // KI-Log ME-40: Endpunkte für gespeicherte Simulationen mit KI erstellt, von Mert Eminel geprüft (FE #17, US-08)
 // Simulation berechnen und unter einem Namen speichern (POST /api/v1/simulations mit save: true, 201).
 // Mit dem Seed der angezeigten Simulation entsteht dasselbe Ergebnis (E32, NF-08).
 export function saveSimulation(token, portfolioId, parameters, name) {
-  return request("/simulations", { method: "POST", body: { token, portfolioId, parameters, save: true, name } });
+  return request("/simulations", { method: "POST", token, body: { portfolioId, parameters, save: true, name } });
 }
 
-// Eigene gespeicherte Simulationen laden (POST /api/v1/simulations/list); liefert { simulations: [...] }, neueste zuerst
+// Eigene gespeicherte Simulationen laden (GET /api/v1/simulations); liefert { simulations: [...] }, neueste zuerst
 export function listSavedSimulations(token) {
-  return request("/simulations/list", { method: "POST", body: { token } });
+  return request("/simulations", { token });
 }
 
-// Gespeicherte Simulation ohne Neuberechnung abrufen (POST /api/v1/simulations/{id}/details)
+// Gespeicherte Simulation ohne Neuberechnung abrufen (GET /api/v1/simulations/{id})
 export function fetchSavedSimulation(token, simulationId) {
-  return request(`/simulations/${encodeURIComponent(simulationId)}/details`, { method: "POST", body: { token } });
+  return request(`/simulations/${encodeURIComponent(simulationId)}`, { token });
 }
 
-// Gespeicherte Simulation löschen (DELETE /api/v1/simulations/{id}); Token im Body, Antwort 204
+// Gespeicherte Simulation löschen (DELETE /api/v1/simulations/{id}); Antwort 204
 export function deleteSavedSimulation(token, simulationId) {
-  return request(`/simulations/${encodeURIComponent(simulationId)}`, { method: "DELETE", body: { token } });
+  return request(`/simulations/${encodeURIComponent(simulationId)}`, { method: "DELETE", token });
 }
 
 // Monte-Carlo-Simulation starten (POST /api/v1/simulations, US-04).
 // parameters: { startCapital, monthlyContribution, horizonYears, paths, seed }; seed darf fehlen.
 // Liefert u. a. timeline: [{ month, p5, p50, p95 }] für das Fächerdiagramm.
 export function runSimulation(token, portfolioId, parameters) {
-  return request("/simulations", { method: "POST", body: { token, portfolioId, parameters } });
+  return request("/simulations", { method: "POST", token, body: { portfolioId, parameters } });
 }
 
 // Zwei Portfolios oder Einzelanlagen mit denselben Parametern vergleichen (US-07).
 export function runComparison(token, items, parameters) {
-  return request("/comparisons", { method: "POST", body: { token, items, parameters, save: false, name: null } });
+  return request("/comparisons", { method: "POST", token, body: { items, parameters, save: false, name: null } });
 }

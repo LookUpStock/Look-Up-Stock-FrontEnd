@@ -32,15 +32,15 @@ const result = {
   runtimeMs: 85,
 };
 
-test("runSimulation posts token, portfolioId and parameters", async () => {
+test("runSimulation posts portfolioId and parameters with the token header", async () => {
   const fetchMock = mock.method(globalThis, "fetch", async () => new Response("{}", { status: 200 }));
 
   await runSimulation("abc", 4, { startCapital: 1000, monthlyContribution: 0, horizonYears: 10, paths: 1000 });
 
   const [url, options] = fetchMock.mock.calls[0].arguments;
   assert.equal(url, `${API_BASE_URL}/api/v1/simulations`);
+  assert.equal(options.headers.Authorization, "Bearer abc");
   assert.deepEqual(JSON.parse(options.body), {
-    token: "abc",
     portfolioId: 4,
     parameters: { startCapital: 1000, monthlyContribution: 0, horizonYears: 10, paths: 1000 },
   });

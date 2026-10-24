@@ -48,8 +48,8 @@ test("saveSimulation posts parameters with save true and name", async () => {
   const [url, options] = fetchMock.mock.calls[0].arguments;
   assert.equal(url, `${API_BASE_URL}/api/v1/simulations`);
   assert.equal(options.method, "POST");
+  assert.equal(options.headers.Authorization, "Bearer abc");
   assert.deepEqual(JSON.parse(options.body), {
-    token: "abc",
     portfolioId: 4,
     parameters: { startCapital: 10000, seed: 42 },
     save: true,
@@ -57,29 +57,32 @@ test("saveSimulation posts parameters with save true and name", async () => {
   });
 });
 
-test("listSavedSimulations posts the token to /simulations/list", async () => {
+test("listSavedSimulations loads /simulations with GET and the token header", async () => {
   const fetchMock = mock.method(globalThis, "fetch", async () => new Response('{"simulations":[]}', { status: 200 }));
 
   const data = await listSavedSimulations("abc");
 
   const [url, options] = fetchMock.mock.calls[0].arguments;
-  assert.equal(url, `${API_BASE_URL}/api/v1/simulations/list`);
-  assert.deepEqual(JSON.parse(options.body), { token: "abc" });
+  assert.equal(url, `${API_BASE_URL}/api/v1/simulations`);
+  assert.equal(options.method, "GET");
+  assert.equal(options.headers.Authorization, "Bearer abc");
+  assert.equal(options.body, undefined);
   assert.deepEqual(data, { simulations: [] });
 });
 
-test("fetchSavedSimulation posts the token to /simulations/{id}/details", async () => {
+test("fetchSavedSimulation loads /simulations/{id} with GET and the token header", async () => {
   const fetchMock = mock.method(globalThis, "fetch", async () => new Response("{}", { status: 200 }));
 
   await fetchSavedSimulation("abc", 17);
 
   const [url, options] = fetchMock.mock.calls[0].arguments;
-  assert.equal(url, `${API_BASE_URL}/api/v1/simulations/17/details`);
-  assert.equal(options.method, "POST");
-  assert.deepEqual(JSON.parse(options.body), { token: "abc" });
+  assert.equal(url, `${API_BASE_URL}/api/v1/simulations/17`);
+  assert.equal(options.method, "GET");
+  assert.equal(options.headers.Authorization, "Bearer abc");
+  assert.equal(options.body, undefined);
 });
 
-test("deleteSavedSimulation sends DELETE with the token in the body and accepts 204", async () => {
+test("deleteSavedSimulation sends DELETE with the token header and accepts 204", async () => {
   const fetchMock = mock.method(globalThis, "fetch", async () => new Response(null, { status: 204 }));
 
   const data = await deleteSavedSimulation("abc", 17);
@@ -87,7 +90,8 @@ test("deleteSavedSimulation sends DELETE with the token in the body and accepts 
   const [url, options] = fetchMock.mock.calls[0].arguments;
   assert.equal(url, `${API_BASE_URL}/api/v1/simulations/17`);
   assert.equal(options.method, "DELETE");
-  assert.deepEqual(JSON.parse(options.body), { token: "abc" });
+  assert.equal(options.headers.Authorization, "Bearer abc");
+  assert.equal(options.body, undefined);
   assert.equal(data, null);
 });
 

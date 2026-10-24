@@ -36,7 +36,7 @@ const portfolio = createPortfolio("Welt", [
   createPosition({ id: "2", assetId: 8, symbol: "IS3N", name: "iShares Core MSCI EM IMI", weightPct: 30 }),
 ]);
 
-test("savePortfolio sends token, name and positions with assetId and weight", async () => {
+test("savePortfolio sends token header, name and positions with assetId and weight", async () => {
   const fetchMock = mockFetchResponse(201, { id: 1 });
 
   await savePortfolio("abc", portfolio.name, portfolio.positions);
@@ -44,8 +44,8 @@ test("savePortfolio sends token, name and positions with assetId and weight", as
   const [url, options] = fetchMock.mock.calls[0].arguments;
   assert.equal(url, `${API_BASE_URL}/api/v1/portfolios`);
   assert.equal(options.method, "POST");
+  assert.equal(options.headers.Authorization, "Bearer abc");
   assert.deepEqual(JSON.parse(options.body), {
-    token: "abc",
     name: "Welt",
     positions: [
       { assetId: 3, weight: 70 },
@@ -54,18 +54,20 @@ test("savePortfolio sends token, name and positions with assetId and weight", as
   });
 });
 
-test("listPortfolios posts the token to the list endpoint", async () => {
+test("listPortfolios loads the portfolios with GET and the token header", async () => {
   const fetchMock = mockFetchResponse(200, { portfolios: [] });
 
   const result = await listPortfolios("abc");
 
   const [url, options] = fetchMock.mock.calls[0].arguments;
-  assert.equal(url, `${API_BASE_URL}/api/v1/portfolios/list`);
-  assert.deepEqual(JSON.parse(options.body), { token: "abc" });
+  assert.equal(url, `${API_BASE_URL}/api/v1/portfolios`);
+  assert.equal(options.method, "GET");
+  assert.equal(options.headers.Authorization, "Bearer abc");
+  assert.equal(options.body, undefined);
   assert.deepEqual(result, { portfolios: [] });
 });
 
-test("updatePortfolio sends the portfolio id, token and positions", async () => {
+test("updatePortfolio sends the portfolio id, token header and positions", async () => {
   const fetchMock = mockFetchResponse(200, { id: 1 });
 
   await updatePortfolio("abc", 1, portfolio.name, portfolio.positions);
@@ -73,8 +75,8 @@ test("updatePortfolio sends the portfolio id, token and positions", async () => 
   const [url, options] = fetchMock.mock.calls[0].arguments;
   assert.equal(url, `${API_BASE_URL}/api/v1/portfolios/1`);
   assert.equal(options.method, "PUT");
+  assert.equal(options.headers.Authorization, "Bearer abc");
   assert.deepEqual(JSON.parse(options.body), {
-    token: "abc",
     name: "Welt",
     positions: [
       { assetId: 3, weight: 70 },
@@ -83,7 +85,7 @@ test("updatePortfolio sends the portfolio id, token and positions", async () => 
   });
 });
 
-test("deletePortfolio sends the token to the portfolio endpoint", async () => {
+test("deletePortfolio sends DELETE with the token header and no body", async () => {
   const fetchMock = mock.method(globalThis, "fetch", async () => new Response(null, { status: 204 }));
 
   await deletePortfolio("abc", 1);
@@ -91,7 +93,8 @@ test("deletePortfolio sends the token to the portfolio endpoint", async () => {
   const [url, options] = fetchMock.mock.calls[0].arguments;
   assert.equal(url, `${API_BASE_URL}/api/v1/portfolios/1`);
   assert.equal(options.method, "DELETE");
-  assert.deepEqual(JSON.parse(options.body), { token: "abc" });
+  assert.equal(options.headers.Authorization, "Bearer abc");
+  assert.equal(options.body, undefined);
 });
 
 test("createPosition keeps the assetId from the search", () => {

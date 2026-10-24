@@ -80,14 +80,16 @@ test("loginUser sends credentials to POST /auth/login", async () => {
   assert.deepEqual(result, { token: "abc123", expiresAt: EXPIRES_AT });
 });
 
-test("logoutUser sends the token in the body to POST /auth/logout", async () => {
+test("logoutUser sends the token as Bearer header to POST /auth/logout", async () => {
   const fetchMock = mockFetch(204);
 
   const result = await logoutUser("abc123");
 
   const [url, options] = fetchMock.mock.calls[0].arguments;
   assert.equal(url, `${API_BASE_URL}/api/v1/auth/logout`);
-  assert.deepEqual(JSON.parse(options.body), { token: "abc123" });
+  assert.equal(options.method, "POST");
+  assert.equal(options.headers.Authorization, "Bearer abc123");
+  assert.equal(options.body, undefined);
   assert.equal(result, null);
 });
 
