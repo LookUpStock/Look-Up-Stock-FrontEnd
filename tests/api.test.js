@@ -39,6 +39,26 @@ test("request sends method, JSON header and body for POST", async () => {
   assert.equal(options.body, JSON.stringify({ name: "Test" }));
 });
 
+test("request sends the token as Bearer Authorization header", async () => {
+  const fetchMock = mockFetchResponse(200, {});
+
+  await request("/portfolios", { token: "abc123" });
+
+  const options = fetchMock.mock.calls[0].arguments[1];
+  assert.equal(options.headers.Authorization, "Bearer abc123");
+});
+
+test("request without token sends no Authorization header (public endpoints)", async () => {
+  const fetchMock = mockFetchResponse(200, {});
+
+  await request("/assets/search?q=msci");
+  await request("/auth/login", { method: "POST", body: { email: "a@b.de", password: "x" } });
+
+  for (const call of fetchMock.mock.calls) {
+    assert.equal("Authorization" in call.arguments[1].headers, false);
+  }
+});
+
 test("request returns null for 204 No Content", async () => {
   mockFetchResponse(204);
 
