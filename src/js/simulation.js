@@ -1,6 +1,6 @@
 // KI-Log Nr. [eintragen]: Eingabemaske der Simulation mit KI erstellt, vom Team zu prüfen (FE #3, US-04)
 
-import { runSimulation, ApiError } from "./api.js";
+import { runSimulation, apiErrorText } from "./api.js";
 import { clearSession, getToken, isUnauthorized, loginPageUrl, REASONS, MESSAGES as AUTH_MESSAGES } from "./auth.js";
 import { loadSavedPortfolios } from "./portfolio-save.js";
 import { formatEuro, renderFanChart } from "./chart.js";
@@ -76,15 +76,9 @@ export function validateSimulationInput(input) {
   return { valid: Object.keys(errors).length === 0, errors, portfolioId, parameters };
 }
 
-// Meldung vom Backend samt Details; bei 422 INSUFFICIENT_DATA mit dem Namen der Anlage
+// Meldung vom Backend; bei 422 INSUFFICIENT_DATA nennt sie jede Anlage genau einmal (B7, FE #34)
 export function simulationErrorMessage(error) {
-  if (!(error instanceof ApiError)) {
-    return MESSAGES.unexpected;
-  }
-  const details = error.details
-    .filter((detail) => detail?.message)
-    .map((detail) => (detail.name ? `${detail.name}: ${detail.message}` : detail.message));
-  return [error.message, ...details].join(" ");
+  return apiErrorText(error) ?? MESSAGES.unexpected;
 }
 
 // Simulation prüfen und starten.

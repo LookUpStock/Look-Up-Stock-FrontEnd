@@ -61,6 +61,22 @@ export async function request(path, options = {}) {
   return data;
 }
 
+// KI-Log ME-[Nr.]: gemeinsame Fehlermeldung mit KI erstellt, von Mert Eminel geprüft (FE #34, B7)
+// Anzeigetext zu einem ApiError: message und die Meldungen aus details.
+// Bei 422 INSUFFICIENT_DATA nennt message bereits alle betroffenen Anlagen (E6),
+// deshalb werden die details dort nicht angehängt, sonst stünde jede Anlage doppelt da (B7).
+// Andere Fehler ergeben null, damit der Aufrufer seinen eigenen Text verwenden kann.
+export function apiErrorText(error) {
+  if (!(error instanceof ApiError)) {
+    return null;
+  }
+  if (error.code === "INSUFFICIENT_DATA") {
+    return error.message;
+  }
+  const details = (error.details ?? []).map((detail) => detail?.message).filter(Boolean);
+  return [error.message, ...details].join(" ");
+}
+
 export function getJson(path) {
   return request(path, { method: "GET" });
 }

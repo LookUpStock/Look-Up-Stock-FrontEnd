@@ -1,7 +1,7 @@
-import { runComparison, searchAssets, ApiError } from "./api.js";
+import { runComparison, searchAssets, apiErrorText } from "./api.js";
 import { clearSession, getToken, isUnauthorized, loginPageUrl, REASONS } from "./auth.js";
 import { loadSavedPortfolios } from "./portfolio-save.js";
-import { renderFanChart, formatEuro, buildFanChartYScale } from "./chart.js";
+import { renderFanChart, formatEuro } from "./chart.js";
 
 const DEFAULTS = { startCapital: "10000", monthlyContribution: "200", horizonYears: "20", paths: "10000", seed: "" };
 
@@ -31,12 +31,9 @@ export function validateComparisonParameters(input) {
   return { valid: Object.keys(errors).length === 0, errors, parameters };
 }
 
+// Bei 422 INSUFFICIENT_DATA wird jede Anlage genau einmal genannt (B7, FE #34)
 function displayError(error) {
-  if (error instanceof ApiError) {
-    const details = error.details.map((detail) => detail?.message).filter(Boolean);
-    return [error.message, ...details].join(" ");
-  }
-  return "Der Vergleich konnte nicht berechnet werden.";
+  return apiErrorText(error) ?? "Der Vergleich konnte nicht berechnet werden.";
 }
 
 export function initComparisonPage(root = document) {
@@ -44,7 +41,6 @@ export function initComparisonPage(root = document) {
   if (!form) return;
   const status = root.getElementById("comparison-status");
   const resultSection = root.getElementById("comparison-result");
-  const metadata = root.getElementById("comparison-metadata");
   const resultsContainer = root.getElementById("comparison-results");
   const pairwise = root.getElementById("comparison-pairwise");
   const submit = form.querySelector("button[type=submit]");
@@ -125,15 +121,14 @@ export function initComparisonPage(root = document) {
     const items = [];
     for (const [index, choice] of [...form.querySelectorAll(".comparison-choice")].entries()) {
       const type = choice.querySelector('[name="itemType"]').value;
-      const customLabel = choice.querySelector('[name="customLabel"]').value.trim();
       if (type === "portfolio") {
         const select = choice.querySelector('[name="portfolioId"]');
         if (!select.value) return { error: `Bitte Portfolio ${index + 1} auswählen.` };
-        items.push({ label: customLabel || select.selectedOptions[0].textContent, portfolioId: Number(select.value) });
+        items.push({ label: select.selectedOptions[0].textContent, portfolioId: Number(select.value) });
       } else {
         const select = choice.querySelector('[name="assetId"]');
         if (!select.value) return { error: `Bitte Anlage ${index + 1} suchen und auswählen.` };
-        items.push({ label: customLabel || select.selectedOptions[0].textContent, assetId: Number(select.value) });
+        items.push({ label: select.selectedOptions[0].textContent, assetId: Number(select.value) });
       }
     }
     return { items };
@@ -141,21 +136,14 @@ export function initComparisonPage(root = document) {
 
   function renderResults(data) {
     resultsContainer.replaceChildren();
-    const seed = data.parameters?.seed;
-    const from = formatDate(data.estimates?.historyFrom);
-    const to = formatDate(data.estimates?.historyTo);
-    const period = from && to ? `${from} bis ${to}` : "nicht verfügbar";
-    metadata.textContent = `Gemeinsamer Schätzzeitraum: ${period} · Seed: ${seed ?? "nicht verfügbar"}`;
-    const results = data.results ?? [];
-    const yScale = buildFanChartYScale(results.map((result) => result.timeline));
-    for (const result of results) {
+    for (const result of data.results ?? []) {
       const card = root.createElement("article");
       card.className = "card comparison-result-card";
       const heading = root.createElement("h3");
       heading.textContent = result.label;
       const chart = root.createElement("div");
       chart.className = "fan-chart-container";
-      renderFanChart(chart, result.timeline, yScale);
+      renderFanChart(chart, result.timeline);
       const metrics = result.metrics ?? {};
       const summary = root.createElement("dl");
       summary.className = "simulation-summary";
@@ -181,12 +169,6 @@ export function initComparisonPage(root = document) {
       ? `„${data.results[0].label}“ schneidet in ${(chance * 100).toLocaleString("de-DE", { maximumFractionDigits: 1 })} % der gemeinsamen Simulationspfade besser ab.`
       : "";
     resultSection.hidden = false;
-  }
-
-  function formatDate(isoDate) {
-    if (typeof isoDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
-    const [year, month, day] = isoDate.split("-");
-    return `${day}.${month}.${year}`;
   }
 
   form.addEventListener("submit", async (event) => {

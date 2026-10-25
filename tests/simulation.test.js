@@ -122,15 +122,19 @@ test("startSimulation reports a missing token and 401 as unauthorized", async ()
   assert.deepEqual(await startSimulation(validInput, "abc", run), { status: "unauthorized" });
 });
 
-test("simulationErrorMessage names assets with too little price data (422)", () => {
-  const error = new ApiError(422, "INSUFFICIENT_DATA", "Für eine Anlage liegen zu wenige Kursdaten vor.", [
-    { field: "assetId", assetId: 7, name: "Neuer ETF", message: "Weniger als 3 Jahre Kursdaten." },
-  ]);
-
-  assert.equal(
-    simulationErrorMessage(error),
-    "Für eine Anlage liegen zu wenige Kursdaten vor. Neuer ETF: Weniger als 3 Jahre Kursdaten."
+// B7 (FE #34): Meldung wie vom Backend (Messages.insufficientData), jede Anlage genau einmal
+test("simulationErrorMessage names each asset with too little price data exactly once (422, B7)", () => {
+  const error = new ApiError(
+    422,
+    "INSUFFICIENT_DATA",
+    "Für folgende Anlagen liegen weniger als 3 Jahre Kursdaten vor: iShares Ethereum Trust ETF.",
+    [{ field: "assetId", assetId: 7, name: "iShares Ethereum Trust ETF", message: "Weniger als 3 Jahre Kursdaten." }]
   );
+
+  const message = simulationErrorMessage(error);
+
+  assert.equal(message, "Für folgende Anlagen liegen weniger als 3 Jahre Kursdaten vor: iShares Ethereum Trust ETF.");
+  assert.equal(message.split("iShares Ethereum Trust ETF").length - 1, 1);
   assert.equal(simulationErrorMessage(new Error("x")), MESSAGES.unexpected);
 });
 
