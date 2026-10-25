@@ -1,9 +1,7 @@
-// KI-Log Nr. [eintragen]: Unit-Tests der Anlagensuche mit KI erstellt, von Mert Eminel geprüft (FE #1)
-
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { searchAssets, ApiError, API_BASE_URL } from "../src/js/api.js";
-import { findAssets, formatAssetDetails, normalizeQuery, MESSAGES } from "../src/js/search.js";
+import { findAssets, formatAssetDetails, normalizeQuery, searchHint, MESSAGES } from "../src/js/search.js";
 
 // Nach jedem Test das echte fetch wiederherstellen
 afterEach(() => {
@@ -120,4 +118,32 @@ test("search result contains the asset id needed by the portfolio editor", async
 test("normalizeQuery handles empty input", () => {
   assert.equal(normalizeQuery(undefined), "");
   assert.equal(normalizeQuery("  EUNL "), "EUNL");
+});
+
+// ===== search.js: Hinweis unter dem Suchfeld (B6) =====
+
+test("search hint shows the error message next to the search field (B6)", async () => {
+  const serverError = async () => {
+    throw new ApiError(500, "INTERNAL_ERROR", "Ein unerwarteter Fehler ist aufgetreten.");
+  };
+
+  const state = await findAssets("ETHA", serverError);
+
+  assert.equal(searchHint(state), "Ein unerwarteter Fehler ist aufgetreten.");
+});
+
+test("search hint shows the backend message when the financial data API is down (B6)", async () => {
+  const unavailable = async () => {
+    throw new ApiError(503, "UPSTREAM_UNAVAILABLE", "Kursdaten sind gerade nicht verfügbar.");
+  };
+
+  const state = await findAssets("ETHA", unavailable);
+
+  assert.equal(searchHint(state), "Kursdaten sind gerade nicht verfügbar.");
+});
+
+test("search hint matches the state for short input, no results and results", async () => {
+  assert.equal(searchHint(await findAssets("E")), MESSAGES.tooShort);
+  assert.equal(searchHint(await findAssets("xyzabc", async () => ({ results: [] }))), MESSAGES.noResults);
+  assert.equal(searchHint(await findAssets("EUNL", async () => ({ results: [EUNL] }))), "");
 });

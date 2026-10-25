@@ -43,6 +43,21 @@ export async function findAssets(input, search = searchAssets) {
   }
 }
 
+// Hinweis unter dem Suchfeld passend zum Zustand der Suche (B6):
+// Fehlermeldungen stehen direkt am Suchfeld und nicht nur am Seitenende
+export function searchHint(state) {
+  switch (state.status) {
+    case "too-short":
+      return MESSAGES.tooShort;
+    case "empty":
+      return MESSAGES.noResults;
+    case "error":
+      return state.message;
+    default:
+      return "";
+  }
+}
+
 // Zweite Zeile eines Treffers: Ticker, Börse und Währung (Akzeptanzkriterium US-02)
 export function formatAssetDetails(asset) {
   return [asset.symbol, asset.exchange, asset.currency].filter(Boolean).join(" · ");
@@ -132,21 +147,15 @@ export function initAssetSearch(container) {
 
     if (state.status === "error") {
       list.replaceChildren();
-      showHint("");
+      // Meldung am Suchfeld anzeigen, damit der Fehler im Blickfeld bleibt (B6)
+      showHint(searchHint(state));
       showError(state.message);
       return;
     }
 
     clearError();
     renderResults(state.results);
-
-    if (state.status === "too-short") {
-      showHint(MESSAGES.tooShort);
-    } else if (state.status === "empty") {
-      showHint(MESSAGES.noResults);
-    } else {
-      showHint("");
-    }
+    showHint(searchHint(state));
   }
 
   input.addEventListener("input", () => {
