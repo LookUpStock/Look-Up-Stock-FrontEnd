@@ -2,7 +2,7 @@
 
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { request, fetchHealth, ApiError, API_BASE_URL } from "../src/js/api.js";
+import { request, fetchHealth, ApiError, API_BASE_URL, apiErrorText } from "../src/js/api.js";
 
 // Nach jedem Test das echte fetch wiederherstellen
 afterEach(() => {
@@ -107,4 +107,50 @@ test("request throws NETWORK_ERROR when the backend is unreachable", async () =>
     assert.equal(error.code, "NETWORK_ERROR");
     return true;
   });
+});
+
+// KI-Log ME-[Nr.]: Tests der gemeinsamen Fehlermeldung mit KI erstellt, von Mert Eminel geprüft (FE #34, B7)
+test("apiErrorText names every asset exactly once for 422 INSUFFICIENT_DATA (B7)", () => {
+  const error = new ApiError(
+    422,
+    "INSUFFICIENT_DATA",
+    "Für folgende Anlagen liegen weniger als 3 Jahre Kursdaten vor: iShares Bitcoin Trust ETF, iShares Ethereum Trust ETF.",
+    [
+      { field: "assetId", assetId: 1, name: "iShares Bitcoin Trust ETF", message: "Weniger als 3 Jahre Kursdaten." },
+      { field: "assetId", assetId: 2, name: "iShares Ethereum Trust ETF", message: "Weniger als 3 Jahre Kursdaten." },
+    ]
+  );
+
+  const text = apiErrorText(error);
+
+  assert.equal(text, error.message);
+  for (const name of ["iShares Bitcoin Trust ETF", "iShares Ethereum Trust ETF"]) {
+    assert.equal(text.split(name).length - 1, 1, name);
+  }
+});
+
+test("apiErrorText keeps both parts when assets have no data and too short a history (422)", () => {
+  const message =
+    "Für folgende Anlagen liefert der Kursdatenanbieter keine Kurse: iShares Core MSCI World. Bitte die Anlage an einer anderen Börse auswählen. " +
+    "Für folgende Anlagen liegen weniger als 3 Jahre Kursdaten vor: iShares Ethereum Trust ETF.";
+  const error = new ApiError(422, "INSUFFICIENT_DATA", message, [
+    { field: "assetId", assetId: 3, name: "iShares Core MSCI World", message: "Keine Kursdaten beim Anbieter verfügbar." },
+    { field: "assetId", assetId: 2, name: "iShares Ethereum Trust ETF", message: "Weniger als 3 Jahre Kursdaten." },
+  ]);
+
+  assert.equal(apiErrorText(error), message);
+});
+
+test("apiErrorText appends the detail messages for other errors", () => {
+  const error = new ApiError(400, "VALIDATION_ERROR", "Eine Anlage wurde nicht gefunden.", [
+    { field: "positions", message: "Unbekannte assetId 99." },
+  ]);
+
+  assert.equal(apiErrorText(error), "Eine Anlage wurde nicht gefunden. Unbekannte assetId 99.");
+  assert.equal(apiErrorText(new ApiError(503, "UPSTREAM_UNAVAILABLE", "Kursdaten sind gerade nicht verfügbar.")), "Kursdaten sind gerade nicht verfügbar.");
+});
+
+test("apiErrorText returns null for errors that do not come from the API", () => {
+  assert.equal(apiErrorText(new Error("kaputt")), null);
+  assert.equal(apiErrorText(undefined), null);
 });
