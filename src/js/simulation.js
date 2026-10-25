@@ -8,7 +8,7 @@ import { initSavedSimulations } from "./saved-simulations.js";
 
 // Grenzwerte und Standardwerte laut API-Design (wie SimulationParameters im Backend)
 export const LIMITS = { minHorizon: 1, maxHorizon: 40, minPaths: 1000, maxPaths: 50000 };
-export const DEFAULTS = { startCapital: "10000", monthlyContribution: "200", horizonYears: "20", paths: "10000", seed: "" };
+export const DEFAULTS = { startCapital: "10000", monthlyContribution: "200", horizonYears: "20", paths: "10000", seed: "", targetAmount: "" };
 
 // Texte wie im Backend, damit dieselbe Eingabe dieselbe Meldung ergibt
 export const MESSAGES = {
@@ -18,6 +18,7 @@ export const MESSAGES = {
   horizonInvalid: "Der Anlagehorizont muss eine ganze Zahl von 1 bis 40 Jahren sein.",
   pathsInvalid: "Die Anzahl der Simulationspfade muss zwischen 1.000 und 50.000 liegen.",
   seedInvalid: "Der Seed muss eine ganze Zahl sein.",
+  targetInvalid: "Der Zielbetrag muss größer als 0 sein.",
   loadingPortfolios: "Portfolios werden geladen …",
   noPortfolios: "Noch kein Portfolio gespeichert. Lege zuerst eines an:",
   running: "Simulation läuft …",
@@ -30,6 +31,29 @@ export const MESSAGES = {
 export function parseNumberInput(value) {
   const text = String(value ?? "").trim().replace(",", ".");
   return text === "" ? Number.NaN : Number(text);
+}
+
+// KI-Log ME-[Nr.]: Zielbetrag und Zielwahrscheinlichkeit mit KI erstellt, von Mert Eminel geprüft (FE #30, B1)
+// Optionaler Zielbetrag (US-05, E27): leer = kein Zielbetrag; sonst eine Zahl größer als 0.
+// Ergebnis: { value: Zahl oder null, error: Meldung oder undefined }
+export function parseTargetAmount(text) {
+  if (String(text ?? "").trim() === "") {
+    return { value: null };
+  }
+  const value = parseNumberInput(text);
+  if (!Number.isFinite(value) || value <= 0) {
+    return { value: null, error: MESSAGES.targetInvalid };
+  }
+  return { value };
+}
+
+// Zeile „Zielwahrscheinlichkeit“ für die Kennzahlen; ohne Zielbetrag null, dann entfällt die Zeile (E27, B1)
+export function targetProbabilityRow(metrics, targetAmount) {
+  const probability = metrics?.targetProbability;
+  if (targetAmount == null || !Number.isFinite(probability)) {
+    return null;
+  }
+  return [`Zielwahrscheinlichkeit (${formatEuro(targetAmount)})`, formatPercent(probability)];
 }
 
 // Prüft die Eingaben vor dem Absenden.
@@ -66,11 +90,19 @@ export function validateSimulationInput(input) {
   if (seed !== null && !Number.isSafeInteger(seed)) {
     errors.seed = MESSAGES.seedInvalid;
   }
+  const target = parseTargetAmount(input.targetAmount);
+  if (target.error) {
+    errors.targetAmount = target.error;
+  }
 
   const parameters = { startCapital, monthlyContribution, horizonYears, paths };
   // Ohne Seed wählt das Backend selbst einen und gibt ihn in der Antwort zurück
   if (seed !== null) {
     parameters.seed = seed;
+  }
+  // Zielbetrag nur mitschicken, wenn er angegeben ist (E27)
+  if (target.value !== null) {
+    parameters.targetAmount = target.value;
   }
 
   return { valid: Object.keys(errors).length === 0, errors, portfolioId, parameters };
@@ -116,6 +148,10 @@ export function summarizeSimulation(result) {
     ["Value at Risk (95 %)", formatEuro(result.metrics?.valueAtRisk95 ?? Math.max(0, totalContributions - last.p5))],
     ["Maximaler Drawdown (Median)", formatPercent(result.metrics?.maxDrawdownMedian)],
   ];
+  const targetRow = targetProbabilityRow(result.metrics, result.parameters.targetAmount);
+  if (targetRow) {
+    rows.push(targetRow);
+  }
 
   const from = result.estimates?.historyFrom;
   const to = result.estimates?.historyTo;
@@ -140,7 +176,7 @@ function formatDate(isoDate) {
 
 // ===== Anzeige: verbindet die Logik mit der Seite =====
 
-const FIELDS = ["portfolioId", "startCapital", "monthlyContribution", "horizonYears", "paths", "seed"];
+const FIELDS = ["portfolioId", "startCapital", "monthlyContribution", "horizonYears", "paths", "seed", "targetAmount"];
 
 export function initSimulationPage(root = document) {
   const form = root.getElementById("simulation-form");
@@ -253,13 +289,14 @@ export function initSimulationPage(root = document) {
 
   // Gespeicherte Simulation anzeigen: Eingaben wie beim Speichern, Ergebnis ohne Neuberechnung (E32)
   function showSavedSimulation(simulation) {
-    const { startCapital, monthlyContribution, horizonYears, paths, seed } = simulation.parameters;
+    const { startCapital, monthlyContribution, horizonYears, paths, seed, targetAmount } = simulation.parameters;
     inputs.portfolioId.value = String(simulation.portfolioId);
     inputs.startCapital.value = String(startCapital);
     inputs.monthlyContribution.value = String(monthlyContribution);
     inputs.horizonYears.value = String(horizonYears);
     inputs.paths.value = String(paths);
     inputs.seed.value = String(seed);
+    inputs.targetAmount.value = targetAmount == null ? "" : String(targetAmount);
     showErrors();
     setStatus("");
     showResult(simulation);

@@ -10,9 +10,10 @@ import {
   simulationErrorMessage,
   startSimulation,
   summarizeSimulation,
+  targetProbabilityRow,
   validateSimulationInput,
 } from "../src/js/simulation.js";
-import { buildFanChartGeometry, CHART_SIZE, describeFanChart, niceStep, yearStep } from "../src/js/chart.js";
+import { buildFanChartGeometry, CHART_SIZE, describeFanChart, formatEuro, niceStep, yearStep } from "../src/js/chart.js";
 
 afterEach(() => {
   mock.restoreAll();
@@ -189,4 +190,48 @@ test("buildFanChartGeometry maps the timeline into the plot area", () => {
 
 test("describeFanChart summarizes the final values", () => {
   assert.match(describeFanChart(result.timeline), /^Nach 2 Jahren: ungünstig 12\.000\s€, mittel 15\.000\s€, günstig 19\.000\s€\.$/);
+});
+
+// KI-Log ME-[Nr.]: Tests zu Zielbetrag und Zielwahrscheinlichkeit mit KI erstellt, von Mert Eminel geprüft (FE #30, B1)
+test("validateSimulationInput sends no targetAmount when the field is empty (B1)", () => {
+  const check = validateSimulationInput({ ...validInput, targetAmount: "  " });
+
+  assert.equal(check.valid, true);
+  assert.equal("targetAmount" in check.parameters, false);
+});
+
+test("validateSimulationInput passes a given target amount, comma allowed (B1, E27)", () => {
+  assert.equal(validateSimulationInput({ ...validInput, targetAmount: "100000" }).parameters.targetAmount, 100000);
+  assert.equal(validateSimulationInput({ ...validInput, targetAmount: "2500,50" }).parameters.targetAmount, 2500.5);
+});
+
+test("validateSimulationInput rejects a target amount of 0, below 0 or no number (B1, E27)", () => {
+  for (const targetAmount of ["0", "-5", "abc"]) {
+    const check = validateSimulationInput({ ...validInput, targetAmount });
+    assert.equal(check.valid, false, targetAmount);
+    assert.equal(check.errors.targetAmount, MESSAGES.targetInvalid);
+  }
+  assert.equal(MESSAGES.targetInvalid, "Der Zielbetrag muss größer als 0 sein.");
+});
+
+test("summarizeSimulation shows the target probability only with a target amount (B1, AT-05-02)", () => {
+  const withTarget = {
+    ...result,
+    parameters: { ...result.parameters, targetAmount: 15000 },
+    metrics: { targetProbability: 0.6234 },
+  };
+  const rows = summarizeSimulation(withTarget).rows;
+  const last = rows[rows.length - 1];
+
+  assert.equal(last[0], `Zielwahrscheinlichkeit (${formatEuro(15000)})`);
+  assert.equal(last[1], new Intl.NumberFormat("de-DE", { style: "percent", maximumFractionDigits: 2 }).format(0.6234));
+
+  const withoutTarget = { ...result, metrics: { targetProbability: null } };
+  assert.equal(summarizeSimulation(withoutTarget).rows.some(([label]) => label.startsWith("Zielwahrscheinlichkeit")), false);
+});
+
+test("targetProbabilityRow is null without target amount or probability", () => {
+  assert.equal(targetProbabilityRow({ targetProbability: 0.5 }, null), null);
+  assert.equal(targetProbabilityRow({ targetProbability: null }, 100000), null);
+  assert.equal(targetProbabilityRow(undefined, 100000), null);
 });
