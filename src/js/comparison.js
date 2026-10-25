@@ -124,14 +124,15 @@ export function initComparisonPage(root = document) {
     const items = [];
     for (const [index, choice] of [...form.querySelectorAll(".comparison-choice")].entries()) {
       const type = choice.querySelector('[name="itemType"]').value;
+      const customLabel = choice.querySelector('[name="customLabel"]').value.trim();
       if (type === "portfolio") {
         const select = choice.querySelector('[name="portfolioId"]');
         if (!select.value) return { error: `Bitte Portfolio ${index + 1} auswählen.` };
-        items.push({ label: select.selectedOptions[0].textContent, portfolioId: Number(select.value) });
+        items.push({ label: customLabel || select.selectedOptions[0].textContent, portfolioId: Number(select.value) });
       } else {
         const select = choice.querySelector('[name="assetId"]');
         if (!select.value) return { error: `Bitte Anlage ${index + 1} suchen und auswählen.` };
-        items.push({ label: select.selectedOptions[0].textContent, assetId: Number(select.value) });
+        items.push({ label: customLabel || select.selectedOptions[0].textContent, assetId: Number(select.value) });
       }
     }
     return { items };
