@@ -183,3 +183,14 @@ export function runSimulation(token, portfolioId, parameters) {
 export function runComparison(token, items, parameters) {
   return request("/comparisons", { method: "POST", token, body: { items, parameters, save: false, name: null } });
 }
+
+// KI-Log ME-[Nr.]: Endpunkte der Beispielsimulation mit KI erstellt, von Mert Eminel geprüft (FE #38, US-09)
+// Beispielportfolios für Gäste (GET /api/v1/demo/portfolios); öffentlich, ohne Authorization-Header
+export function fetchDemoPortfolios() {
+  return request("/demo/portfolios");
+}
+
+// Beispielsimulation ohne Anmeldung und ohne Speichern (POST /api/v1/demo/simulations, US-09)
+export function runDemoSimulation(portfolioId, parameters) {
+  return request("/demo/simulations", { method: "POST", body: { portfolioId, parameters } });
+}

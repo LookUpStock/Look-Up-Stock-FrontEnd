@@ -18,6 +18,7 @@ import { initAssetSearch } from "./search.js";
 import { initPortfolioEditor } from "./portfolio-ui.js";
 import { initSimulationPage } from "./simulation.js";
 import { initComparisonPage } from "./comparison.js";
+import { initDemoPage } from "./demo.js";
 
 import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage } from "./auth.js";
 
@@ -37,6 +38,14 @@ renderAuthStatus(document.getElementById("auth-status"), session);
 
 // Portfolio-Editor nur mit Anmeldung (US-03); die Anlagensuche bleibt öffentlich (US-02)
 protectSection(document.getElementById("portfolio-editor"), session, currentPage);
+
+// Startseite (FE #38, US-09): Eigene Simulation und gespeicherte Simulationen nur mit Anmeldung;
+// ohne Anmeldung erscheint dort ein Hinweis mit Link, dafür ist die Beispielsimulation sichtbar.
+protectSection(document.getElementById("simulation-input"), session, currentPage);
+protectSection(document.getElementById("saved-simulations"), session, currentPage);
+if (document.getElementById("demo-simulation") && session.status !== "valid") {
+  initDemoPage();
+}
 
 // Anmeldeseite (login.html)
 if (document.getElementById("login-form")) {
