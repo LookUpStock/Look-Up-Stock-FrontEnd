@@ -510,6 +510,7 @@ button:disabled {
 .comparison-choice input, .comparison-choice select { width: 100%; }
 .comparison-result-card { min-width: 0; }
 .comparison-result-card h3 { overflow-wrap: anywhere; }
+.comparison-metadata { color: var(--color-text-muted); }
 .comparison-pairwise { font-weight: 600; }
 
 @media (max-width: 760px) {

@@ -44,6 +44,7 @@ export function initComparisonPage(root = document) {
   if (!form) return;
   const status = root.getElementById("comparison-status");
   const resultSection = root.getElementById("comparison-result");
+  const metadata = root.getElementById("comparison-metadata");
   const resultsContainer = root.getElementById("comparison-results");
   const pairwise = root.getElementById("comparison-pairwise");
   const submit = form.querySelector("button[type=submit]");
@@ -140,6 +141,11 @@ export function initComparisonPage(root = document) {
 
   function renderResults(data) {
     resultsContainer.replaceChildren();
+    const seed = data.parameters?.seed;
+    const from = formatDate(data.estimates?.historyFrom);
+    const to = formatDate(data.estimates?.historyTo);
+    const period = from && to ? `${from} bis ${to}` : "nicht verfügbar";
+    metadata.textContent = `Gemeinsamer Schätzzeitraum: ${period} · Seed: ${seed ?? "nicht verfügbar"}`;
     for (const result of data.results ?? []) {
       const card = root.createElement("article");
       card.className = "card comparison-result-card";
@@ -173,6 +179,12 @@ export function initComparisonPage(root = document) {
       ? `„${data.results[0].label}“ schneidet in ${(chance * 100).toLocaleString("de-DE", { maximumFractionDigits: 1 })} % der gemeinsamen Simulationspfade besser ab.`
       : "";
     resultSection.hidden = false;
+  }
+
+  function formatDate(isoDate) {
+    if (typeof isoDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
+    const [year, month, day] = isoDate.split("-");
+    return `${day}.${month}.${year}`;
   }
 
   form.addEventListener("submit", async (event) => {
