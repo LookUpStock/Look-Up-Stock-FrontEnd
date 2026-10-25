@@ -36,7 +36,6 @@
               <label>Suchergebnis<select name="assetId"><option value="">Anlage auswählen</option></select></label>
               <p class="asset-search-hint search-hint" aria-live="polite"></p>
             </div>
-            <div class="field-group"><label>Eigene Bezeichnung (optional)<input name="customLabel" type="text" maxlength="100" placeholder="z. B. Langfristige Strategie"></label></div>
           </fieldset>
           <fieldset class="comparison-choice">
             <legend>Zweite Auswahl</legend>
@@ -50,7 +49,6 @@
               <label>Suchergebnis<select name="assetId"><option value="">Anlage auswählen</option></select></label>
               <p class="asset-search-hint search-hint" aria-live="polite"></p>
             </div>
-            <div class="field-group"><label>Eigene Bezeichnung (optional)<input name="customLabel" type="text" maxlength="100" placeholder="z. B. Langfristige Strategie"></label></div>
           </fieldset>
         </div>
         <h3>Gemeinsame Simulationsparameter</h3>
@@ -60,6 +58,8 @@
           <div class="field-group"><label>Anlagehorizont in Jahren (1–40)<input name="horizonYears" inputmode="numeric" required></label><p id="compare-horizonYears-error" class="field-error" aria-live="polite"></p></div>
           <div class="field-group"><label>Simulationspfade (1.000–50.000)<input name="paths" inputmode="numeric" required></label><p id="compare-paths-error" class="field-error" aria-live="polite"></p></div>
           <div class="field-group"><label>Seed (optional)<input name="seed" inputmode="numeric" placeholder="zufällig"></label><p id="compare-seed-error" class="field-error" aria-live="polite"></p></div>
+          <!-- Optionaler Zielbetrag (FE #30, B1, US-05, E27) -->
+          <div class="field-group"><label>Zielbetrag in € (optional)<input name="targetAmount" inputmode="decimal" placeholder="z. B. 100000"></label><p id="compare-targetAmount-error" class="field-error" aria-live="polite"></p></div>
         </div>
         <button type="submit">Vergleich berechnen</button>
         <p id="comparison-status" class="summary-status" role="status" aria-live="polite"></p>
@@ -67,11 +67,8 @@
     </section>
     <section id="comparison-result" class="card" hidden>
       <h2>Ergebnisse im Vergleich</h2>
-      <p id="comparison-metadata" class="comparison-metadata" aria-live="polite"></p>
       <p id="comparison-pairwise" class="comparison-pairwise" aria-live="polite"></p>
       <div id="comparison-results" class="comparison-results"></div>
-      <p class="search-hint">Wechselkursschwankungen werden nicht berücksichtigt.</p>
-      <p class="search-hint">Die Werte sind nominal und berücksichtigen keine Kosten, Steuern und Inflation. Keine Anlageberatung.</p>
     </section>
   </main>
   <footer class="site-footer"><p>LookUpStock · DHBW Webprojekt</p></footer>

@@ -73,6 +73,12 @@
             <input id="simulation-seed" name="seed" type="text" inputmode="numeric" autocomplete="off" placeholder="zufällig">
             <p id="simulation-seed-error" class="field-error" aria-live="polite"></p>
           </div>
+          <!-- Optionaler Zielbetrag (FE #30, B1, US-05, E27) -->
+          <div class="field-group">
+            <label for="simulation-target">Zielbetrag in € (optional)</label>
+            <input id="simulation-target" name="targetAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="z. B. 100000">
+            <p id="simulation-targetAmount-error" class="field-error" aria-live="polite"></p>
+          </div>
         </div>
 
         <div class="action-row">
