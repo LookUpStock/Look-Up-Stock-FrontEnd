@@ -1,7 +1,7 @@
 import { runComparison, searchAssets, ApiError } from "./api.js";
 import { clearSession, getToken, isUnauthorized, loginPageUrl, REASONS } from "./auth.js";
 import { loadSavedPortfolios } from "./portfolio-save.js";
-import { renderFanChart, formatEuro } from "./chart.js";
+import { renderFanChart, formatEuro, buildFanChartYScale } from "./chart.js";
 
 const DEFAULTS = { startCapital: "10000", monthlyContribution: "200", horizonYears: "20", paths: "10000", seed: "" };
 
@@ -146,14 +146,16 @@ export function initComparisonPage(root = document) {
     const to = formatDate(data.estimates?.historyTo);
     const period = from && to ? `${from} bis ${to}` : "nicht verfügbar";
     metadata.textContent = `Gemeinsamer Schätzzeitraum: ${period} · Seed: ${seed ?? "nicht verfügbar"}`;
-    for (const result of data.results ?? []) {
+    const results = data.results ?? [];
+    const yScale = buildFanChartYScale(results.map((result) => result.timeline));
+    for (const result of results) {
       const card = root.createElement("article");
       card.className = "card comparison-result-card";
       const heading = root.createElement("h3");
       heading.textContent = result.label;
       const chart = root.createElement("div");
       chart.className = "fan-chart-container";
-      renderFanChart(chart, result.timeline);
+      renderFanChart(chart, result.timeline, yScale);
       const metrics = result.metrics ?? {};
       const summary = root.createElement("dl");
       summary.className = "simulation-summary";

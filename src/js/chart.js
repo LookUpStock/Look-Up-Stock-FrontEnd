@@ -37,6 +37,15 @@ export function niceStep(rawStep) {
   return nice * power;
 }
 
+// Gemeinsame Y-Skala aus den p95-Werten mehrerer Diagramme berechnen.
+export function buildFanChartYScale(timelines) {
+  const maxValue = Math.max(0, ...timelines.flatMap((timeline) =>
+    (timeline ?? []).map((point) => point.p95)));
+  const yStep = niceStep(maxValue / MAX_Y_TICKS);
+  const yMax = Math.max(yStep, Math.ceil(maxValue / yStep) * yStep);
+  return { yMax, yStep };
+}
+
 // Abstand der Jahresbeschriftung, damit höchstens MAX_X_TICKS Beschriftungen entstehen
 export function yearStep(horizonYears) {
   return [1, 2, 5, 10].find((step) => horizonYears / step <= MAX_X_TICKS) ?? 10;
@@ -47,14 +56,12 @@ function toPath(points) {
 }
 
 // Berechnet Linien, Fläche und Achsen in Koordinaten der Zeichenfläche
-export function buildFanChartGeometry(timeline, size = CHART_SIZE) {
+export function buildFanChartGeometry(timeline, size = CHART_SIZE, yScale = null) {
   const plotWidth = size.width - size.left - size.right;
   const plotHeight = size.height - size.top - size.bottom;
   const lastMonth = Math.max(1, timeline[timeline.length - 1]?.month ?? 0);
 
-  const maxValue = Math.max(0, ...timeline.map((point) => point.p95));
-  const step = niceStep(maxValue / MAX_Y_TICKS);
-  const yMax = Math.max(step, Math.ceil(maxValue / step) * step);
+  const { yMax, yStep } = yScale ?? buildFanChartYScale([timeline]);
 
   const x = (month) => size.left + (month / lastMonth) * plotWidth;
   const y = (value) => size.top + plotHeight - (value / yMax) * plotHeight;
@@ -63,7 +70,7 @@ export function buildFanChartGeometry(timeline, size = CHART_SIZE) {
   const lower = timeline.map((point) => [x(point.month), y(point.p5)]);
 
   const yTicks = [];
-  for (let value = 0; value <= yMax + step / 2; value += step) {
+  for (let value = 0; value <= yMax + yStep / 2; value += yStep) {
     yTicks.push({ value, y: y(value), label: formatEuro(value) });
   }
 
@@ -112,14 +119,14 @@ function svgText(text, attributes) {
 }
 
 // Zeichnet das Fächerdiagramm in den übergebenen Container
-export function renderFanChart(container, timeline) {
+export function renderFanChart(container, timeline, yScale = null) {
   container.replaceChildren();
   if (!timeline?.length) {
     container.textContent = "Keine Daten für das Diagramm.";
     return;
   }
 
-  const geometry = buildFanChartGeometry(timeline);
+  const geometry = buildFanChartGeometry(timeline, CHART_SIZE, yScale);
   const { plot } = geometry;
 
   const svg = svgElement("svg", {
