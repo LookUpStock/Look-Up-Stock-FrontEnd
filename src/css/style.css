@@ -705,3 +705,11 @@ button:disabled {
   border-color: var(--color-success);
   background-color: #e7f5ec;
 }
+
+/* Achsenbeschriftung im Fächerdiagramm bei 360 px lesbar halten (FE #58). */
+@media (max-width: 400px) {
+  .fan-chart-label {
+    font-size: 20px;
+  }
+}
+
