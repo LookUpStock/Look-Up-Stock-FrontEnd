@@ -705,3 +705,26 @@ button:disabled {
   border-color: var(--color-success);
   background-color: #e7f5ec;
 }
+
+/* Portfoliokn�pfe auf schmalen Displays innerhalb der Listeneintr�ge halten (FE #57). */
+@media (max-width: 400px) {
+  .saved-portfolio {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .saved-portfolio-actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .saved-portfolio-actions button {
+    width: 100%;
+    white-space: nowrap;
+  }
+}
+
+
+
+
