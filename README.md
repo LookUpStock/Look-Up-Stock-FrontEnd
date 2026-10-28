@@ -24,6 +24,8 @@ Benutzeroberfläche für LookUpStock: Anlagen suchen, Portfolios zusammenstellen
 2. In VS Code Rechtsklick auf `src/index.html` → **Open with Live Server**.
 3. Die Statusleiste oben zeigt „Backend: verbunden“, wenn die Verbindung steht.
 
+Der SPA-Touchpoint startet separat über `src/app.html`. Er verwendet Hash-Routen wie `app.html#/portfolios/5`; Hash-Routing hält Direktaufrufe auf dem statischen `serve`-Deployment funktionsfähig, ohne Server-Rewrite-Regeln. Die MPA-Seiten bleiben unverändert erreichbar und verlinken zur SPA.
+
 Live Server muss auf **Port 5500** laufen. Die Seite sollte über `http://localhost:5500` geöffnet werden. Wenn Live Server `127.0.0.1:5500` verwendet, leitet das Frontend automatisch auf `localhost` um. Die Seiten nicht per Doppelklick öffnen (`file://`), da ES-Module und API-Aufrufe dann nicht funktionieren.
 
 ## Testen
@@ -54,13 +56,18 @@ Für das Deployment auf dem Server wird `API_BASE_URL` angepasst oder per Laufze
 src/
 ├── index.html        Simulationsseite (Startseite)
 ├── portfolio.html    Anlagensuche und Portfolio-Editor
+├── app.html           SPA-Touchpoint (Hash-Routing)
 ├── css/style.css     Gemeinsame Styles (Farben als Variablen in :root)
 └── js/
     ├── api.js        Alle Backend-Aufrufe, einheitliche Fehlerbehandlung (ApiError)
     ├── main.js       Einstiegspunkt beider Seiten, prüft die Backend-Verbindung
-    └── chart.js      Fächerdiagramm der Simulation
+    ├── chart.js      Fächerdiagramm der Simulation
+    └── spa/
+        ├── app.js    SPA-Ansichten für Portfolios und Simulationen
+        └── router.js Hash-Routen und clientseitige Navigation
 tests/
-└── api.test.js       Unit-Tests der API-Schicht
+├── api.test.js       Unit-Tests der API-Schicht
+└── router.test.js   Unit-Tests der SPA-Routen
 ```
 
 ## Hinweise für die Umsetzung

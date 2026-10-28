@@ -496,6 +496,67 @@ button:disabled {
   font-weight: 700;
 }
 
+/* SPA-Touchpoint (FE #53): Listen und Ansichten ohne vollständigen Seitenwechsel. */
+.spa-page > h1 {
+  margin-bottom: var(--spacing-medium);
+}
+
+.spa-page > h1:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
+.spa-back-link {
+  display: inline-block;
+  margin: 0 0 var(--spacing-medium);
+}
+
+.spa-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spa-list-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-small) var(--spacing-medium);
+  min-width: 0;
+  padding: var(--spacing-small) var(--spacing-medium);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.spa-list-item > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.spa-list-item p {
+  margin: 0;
+}
+
+.spa-simulation-form {
+  margin-top: var(--spacing-large);
+}
+
+.spa-simulation-form h2 {
+  margin-bottom: 0;
+}
+
+.spa-result {
+  margin-top: var(--spacing-large);
+}
+
+.spa-result .card {
+  margin-top: var(--spacing-medium);
+}
+
 /* Vergleich zweier Anlagen oder Portfolios mit gemeinsamen Parametern */
 .comparison-choices, .comparison-results {
   display: grid;
@@ -706,7 +767,7 @@ button:disabled {
   background-color: #e7f5ec;
 }
 
-/* Achsenbeschriftung im F�cherdiagramm bei 360 px lesbar halten (FE #58). */
+/* Achsenbeschriftung im Fächerdiagramm bei 360 px lesbar halten (FE #58). */
 @media (max-width: 400px) {
   .fan-chart-label {
     font-size: 20px;

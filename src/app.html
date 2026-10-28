@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LookUpStock (SPA)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/spa/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a href="app.html#/portfolios" class="logo">LookUpStock</a>
+    <nav class="main-nav" aria-label="SPA-Navigation">
+      <a href="#/portfolios" class="nav-link">Portfolios</a>
+      <a href="#/simulations" class="nav-link">Simulationen</a>
+      <a href="index.html" class="nav-link">MPA</a>
+      <div id="auth-status" class="auth-status"></div>
+    </nav>
+  </header>
+
+  <main class="page-content">
+    <section class="status-bar" aria-label="Backendstatus">
+      <span>Ansicht:</span>
+      <span>Single-Page-App</span>
+    </section>
+    <div id="route-view" aria-live="polite"></div>
+  </main>
+
+  <footer class="site-footer">
+    <p>LookUpStock · SPA-Touchpoint</p>
+  </footer>
+</body>
+</html>
