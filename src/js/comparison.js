@@ -1,9 +1,10 @@
-import { runComparison, searchAssets, ApiError } from "./api.js";
+import { runComparison, searchAssets, apiErrorText } from "./api.js";
 import { clearSession, getToken, isUnauthorized, loginPageUrl, REASONS } from "./auth.js";
 import { loadSavedPortfolios } from "./portfolio-save.js";
-import { renderFanChart, formatEuro } from "./chart.js";
+import { renderFanChart, formatEuro, buildFanChartYScale } from "./chart.js";
+import { parseTargetAmount, targetProbabilityRow } from "./simulation.js";
 
-const DEFAULTS = { startCapital: "10000", monthlyContribution: "200", horizonYears: "20", paths: "10000", seed: "" };
+const DEFAULTS = { startCapital: "10000", monthlyContribution: "200", horizonYears: "20", paths: "10000", seed: "", targetAmount: "" };
 
 function number(value) {
   const normalized = String(value ?? "").trim().replace(",", ".");
@@ -26,17 +27,18 @@ export function validateComparisonParameters(input) {
   if (!Number.isInteger(horizonYears) || horizonYears < 1 || horizonYears > 40) errors.horizonYears = "Der Anlagehorizont muss eine ganze Zahl von 1 bis 40 Jahren sein.";
   if (!Number.isInteger(paths) || paths < 1000 || paths > 50000) errors.paths = "Die Anzahl der Simulationspfade muss zwischen 1.000 und 50.000 liegen.";
   if (seed !== null && !Number.isSafeInteger(seed)) errors.seed = "Der Seed muss eine ganze Zahl sein.";
+  // Optionaler Zielbetrag wie bei der Simulation (FE #30, B1, E27)
+  const target = parseTargetAmount(input.targetAmount);
+  if (target.error) errors.targetAmount = target.error;
   const parameters = { startCapital, monthlyContribution, horizonYears, paths };
   if (seed !== null) parameters.seed = seed;
+  if (target.value !== null) parameters.targetAmount = target.value;
   return { valid: Object.keys(errors).length === 0, errors, parameters };
 }
 
+// Bei 422 INSUFFICIENT_DATA wird jede Anlage genau einmal genannt (B7, FE #34)
 function displayError(error) {
-  if (error instanceof ApiError) {
-    const details = error.details.map((detail) => detail?.message).filter(Boolean);
-    return [error.message, ...details].join(" ");
-  }
-  return "Der Vergleich konnte nicht berechnet werden.";
+  return apiErrorText(error) ?? "Der Vergleich konnte nicht berechnet werden.";
 }
 
 export function initComparisonPage(root = document) {
@@ -48,7 +50,7 @@ export function initComparisonPage(root = document) {
   const resultsContainer = root.getElementById("comparison-results");
   const pairwise = root.getElementById("comparison-pairwise");
   const submit = form.querySelector("button[type=submit]");
-  const fields = ["startCapital", "monthlyContribution", "horizonYears", "paths", "seed"];
+  const fields = ["startCapital", "monthlyContribution", "horizonYears", "paths", "seed", "targetAmount"];
   for (const field of fields) form.elements[field].value = DEFAULTS[field];
 
   function redirectToLogin() {
@@ -146,15 +148,19 @@ export function initComparisonPage(root = document) {
     const to = formatDate(data.estimates?.historyTo);
     const period = from && to ? `${from} bis ${to}` : "nicht verfügbar";
     metadata.textContent = `Gemeinsamer Schätzzeitraum: ${period} · Seed: ${seed ?? "nicht verfügbar"}`;
-    for (const result of data.results ?? []) {
+    const results = data.results ?? [];
+    const yScale = buildFanChartYScale(results.map((result) => result.timeline));
+    for (const result of results) {
       const card = root.createElement("article");
       card.className = "card comparison-result-card";
       const heading = root.createElement("h3");
       heading.textContent = result.label;
       const chart = root.createElement("div");
       chart.className = "fan-chart-container";
-      renderFanChart(chart, result.timeline);
+      renderFanChart(chart, result.timeline, yScale);
       const metrics = result.metrics ?? {};
+      // Zielwahrscheinlichkeit nur mit Zielbetrag (FE #30, B1, E27)
+      const targetRow = targetProbabilityRow(metrics, data.parameters?.targetAmount);
       const summary = root.createElement("dl");
       summary.className = "simulation-summary";
       for (const [label, value] of [
@@ -165,6 +171,7 @@ export function initComparisonPage(root = document) {
         ["Value at Risk (95 %)", formatEuro(metrics.valueAtRisk95)],
         ["Maximaler Drawdown (Median)", Number.isFinite(metrics.maxDrawdownMedian)
           ? new Intl.NumberFormat("de-DE", { style: "percent", maximumFractionDigits: 2 }).format(metrics.maxDrawdownMedian) : "–"],
+        ...(targetRow ? [targetRow] : []),
       ]) {
         const row = root.createElement("div");
         const term = root.createElement("dt"); term.textContent = label;

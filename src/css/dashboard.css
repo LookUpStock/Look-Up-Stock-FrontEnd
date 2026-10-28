@@ -1,0 +1,44 @@
+.dashboard-controls {
+  max-width: 24rem;
+  margin: 1.5rem 0;
+}
+
+.dashboard-controls input {
+  margin-bottom: 0;
+}
+
+.dashboard-provisional {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.dashboard-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.dashboard-table thead th:last-child,
+.dashboard-table tbody td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 400px) {
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 0.5rem;
+  }
+}

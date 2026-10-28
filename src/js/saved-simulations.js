@@ -1,7 +1,7 @@
 // KI-Log ME-40: Speichern und Aufrufen von Simulationen mit KI erstellt, von Mert Eminel geprüft (FE #17, US-08)
 
 import {
-  ApiError,
+  apiErrorText,
   deleteSavedSimulation,
   fetchSavedSimulation,
   listSavedSimulations,
@@ -56,11 +56,7 @@ export function buildSaveParameters(result) {
 
 // Meldung vom Backend samt Details; sonst allgemeiner Text
 export function errorMessageFrom(error) {
-  if (!(error instanceof ApiError)) {
-    return MESSAGES.unexpected;
-  }
-  const details = error.details.map((detail) => detail?.message).filter(Boolean);
-  return [error.message, ...details].join(" ");
+  return apiErrorText(error) ?? MESSAGES.unexpected;
 }
 
 // Gemeinsame Fehlerbehandlung: 401 führt zur Anmeldung, alles andere wird als Meldung angezeigt

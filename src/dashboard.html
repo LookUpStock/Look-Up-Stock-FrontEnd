@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LookUpStock – Auswertungen</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-requires-login="true">
+  <header class="site-header">
+    <a href="index.html" class="logo">LookUpStock</a>
+    <nav class="main-nav" aria-label="Hauptnavigation">
+      <a href="index.html" class="nav-link">Simulation</a>
+      <a href="portfolio.html" class="nav-link">Portfolios</a>
+      <a href="compare.html" class="nav-link">Vergleich</a>
+      <a href="dashboard.html" class="nav-link active">Auswertungen</a>
+      <div id="auth-status" class="auth-status"></div>
+    </nav>
+  </header>
+
+  <main class="page-content">
+    <section id="dashboard-denied" class="auth-notice" role="alert" hidden>Dafür fehlt die Berechtigung.</section>
+    <section id="dashboard-content" class="card">
+      <h1>Monatliche Auswertungen</h1>
+      <p>Aktivitätskennzahlen für den ausgewählten Monat.</p>
+      <div class="dashboard-controls">
+        <label for="dashboard-month">Monat auswählen</label>
+        <input id="dashboard-month" type="month">
+        <p class="search-hint">Ausgewählter Zeitraum: <strong id="dashboard-month-label"></strong> <span id="dashboard-provisional" class="dashboard-provisional" hidden>(vorläufig)</span></p>
+      </div>
+      <p id="dashboard-notice" class="auth-notice" role="status" aria-live="polite"></p>
+      <div class="dashboard-table-wrap">
+        <table class="dashboard-table">
+          <thead><tr><th scope="col">Kennzahl</th><th scope="col">Anzahl</th></tr></thead>
+          <tbody id="dashboard-metrics"></tbody>
+        </table>
+      </div>
+      <p class="search-hint">Der Kennzahlenabruf wird aktiviert, sobald der API-Vertrag für US-11 vorliegt.</p>
+    </section>
+  </main>
+  <footer class="site-footer"><p>LookUpStock · DHBW Webprojekt</p></footer>
+</body>
+</html>

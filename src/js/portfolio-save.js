@@ -1,6 +1,6 @@
 // KI-Log Nr. [eintragen]: Speichern und Laden von Portfolios mit KI erstellt, vom Team zu prüfen (US-03)
 
-import { savePortfolio, updatePortfolio, deletePortfolio, listPortfolios, ApiError } from "./api.js";
+import { savePortfolio, updatePortfolio, deletePortfolio, listPortfolios, apiErrorText } from "./api.js";
 import { isUnauthorized } from "./auth.js";
 import { formatWeightInput } from "./portfolio.js";
 
@@ -25,11 +25,7 @@ export function missingAssetErrors(portfolio) {
 
 // Meldung vom Backend samt Details (z. B. "Unbekannte assetId 7."); sonst allgemeiner Text
 export function errorMessageFrom(error) {
-  if (!(error instanceof ApiError)) {
-    return MESSAGES.unexpected;
-  }
-  const details = error.details.map((detail) => detail?.message).filter(Boolean);
-  return [error.message, ...details].join(" ");
+  return apiErrorText(error) ?? MESSAGES.unexpected;
 }
 
 // Portfolio an das Backend senden.
