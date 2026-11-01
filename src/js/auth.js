@@ -12,7 +12,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const SESSION_KEY = "lookupstock.session";
 
 // Seiten, auf die nach dem Login zurückgeleitet werden darf (keine fremden Adressen)
-const ALLOWED_NEXT_PAGES = ["index.html", "portfolio.html"];
+const ALLOWED_NEXT_PAGES = ["index.html", "portfolio.html", "dashboard.html"];
 export const DEFAULT_NEXT_PAGE = "portfolio.html";
 
 // Texte laut API-Design und PO-Entscheidungen E12 bis E14
@@ -84,8 +84,14 @@ function browserStorage() {
 // Anmeldung nach dem Login speichern
 export function saveSession(loginResponse, email, storage = browserStorage()) {
   const session = { token: loginResponse.token, expiresAt: loginResponse.expiresAt, email };
+  if (loginResponse.role !== undefined) session.role = loginResponse.role;
   storage?.setItem(SESSION_KEY, JSON.stringify(session));
   return session;
+}
+
+// Die Auswertungen sind nur für die vom Backend gelieferte Rolle MANAGER sichtbar (E40).
+export function hasManagementRole(session) {
+  return session?.role === "MANAGER";
 }
 
 export function clearSession(storage = browserStorage()) {

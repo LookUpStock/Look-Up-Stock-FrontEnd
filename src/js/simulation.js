@@ -134,6 +134,22 @@ export async function startSimulation(input, token, run = runSimulation) {
   }
 }
 
+// KI-Log ME-[Nr.]: Ausblenden des alten Ergebnisses mit KI erstellt, von Mert Eminel geprüft (FE #54, H2)
+// Ein Ergebnis bleibt nur nach einem erfolgreichen Lauf sichtbar. Nach ungültigen Eingaben oder einer
+// Fehlermeldung wird das Ergebnis des vorherigen Laufs ausgeblendet, damit es nicht zur fehlerhaften
+// Eingabe zu gehören scheint (H2, Abnahmeprotokoll Sprint 4). Gilt für Simulation und Vergleich.
+export function isResultVisibleAfter(status) {
+  return status === "done";
+}
+
+// KI-Log ME-[Nr.]: Gemeinsame Statuszeile mit KI erstellt, von Mert Eminel geprüft (FE #55, H3)
+// Statuszeile unter dem Formular. Fehlermeldungen werden rot hervorgehoben (Klasse summary-status-invalid),
+// Hinweise wie „Simulation läuft …“ nicht. Simulation und Vergleich nutzen dieselbe Funktion (H3).
+export function showStatus(element, text, isError = false) {
+  element.textContent = text;
+  element.classList.toggle("summary-status-invalid", isError);
+}
+
 // Kennzahlen unter dem Diagramm: Endwerte, eingezahlter Betrag und Datengrundlage
 export function summarizeSimulation(result) {
   const last = result.timeline[result.timeline.length - 1];
@@ -220,8 +236,7 @@ export function initSimulationPage(root = document) {
   }
 
   function setStatus(text, isError = false) {
-    statusElement.textContent = text;
-    statusElement.classList.toggle("summary-status-invalid", isError);
+    showStatus(statusElement, text, isError);
   }
 
   async function loadPortfolios() {
@@ -312,6 +327,11 @@ export function initSimulationPage(root = document) {
     setStatus(MESSAGES.running);
     const outcome = await startSimulation(input, getToken());
     submitButton.disabled = false;
+
+    // H2: Ergebnis des vorherigen Laufs nach einem Fehler ausblenden (mit ihm das Speichern-Formular)
+    if (!isResultVisibleAfter(outcome.status)) {
+      resultSection.hidden = true;
+    }
 
     if (outcome.status === "invalid") {
       setStatus("");

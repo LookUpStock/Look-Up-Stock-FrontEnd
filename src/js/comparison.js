@@ -2,7 +2,7 @@ import { runComparison, searchAssets, apiErrorText } from "./api.js";
 import { clearSession, getToken, isUnauthorized, loginPageUrl, REASONS } from "./auth.js";
 import { loadSavedPortfolios } from "./portfolio-save.js";
 import { renderFanChart, formatEuro, buildFanChartYScale } from "./chart.js";
-import { parseTargetAmount, targetProbabilityRow } from "./simulation.js";
+import { parseTargetAmount, targetProbabilityRow, isResultVisibleAfter, showStatus } from "./simulation.js";
 
 const DEFAULTS = { startCapital: "10000", monthlyContribution: "200", horizonYears: "20", paths: "10000", seed: "", targetAmount: "" };
 
@@ -188,6 +188,10 @@ export function initComparisonPage(root = document) {
     resultSection.hidden = false;
   }
 
+  function hideResult(outcomeStatus) {
+    if (!isResultVisibleAfter(outcomeStatus)) resultSection.hidden = true;
+  }
+
   function formatDate(isoDate) {
     if (typeof isoDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
     const [year, month, day] = isoDate.split("-");
@@ -198,20 +202,23 @@ export function initComparisonPage(root = document) {
     event.preventDefault();
     showErrors();
     const selection = selections();
-    if (selection.error) { status.textContent = selection.error; return; }
+    // H2 (FE #54): Nach einem Fehler das Ergebnis des vorherigen Vergleichs ausblenden
+    // H3 (FE #55): Fehlermeldungen rot wie auf der Simulationsseite
+    if (selection.error) { hideResult("invalid"); showStatus(status, selection.error, true); return; }
     const input = Object.fromEntries(fields.map((field) => [field, form.elements[field].value]));
     const validated = validateComparisonParameters(input);
-    if (!validated.valid) { showErrors(validated.errors); status.textContent = "Bitte die markierten Eingaben prüfen."; return; }
+    if (!validated.valid) { hideResult("invalid"); showErrors(validated.errors); showStatus(status, "Bitte die markierten Eingaben prüfen.", true); return; }
     if (!getToken()) return redirectToLogin();
     submit.disabled = true;
-    status.textContent = "Vergleich wird berechnet …";
+    showStatus(status, "Vergleich wird berechnet …");
     try {
       const response = await runComparison(getToken(), selection.items, validated.parameters);
       renderResults(response);
-      status.textContent = "";
+      showStatus(status, "");
     } catch (error) {
       if (isUnauthorized(error)) return redirectToLogin();
-      status.textContent = displayError(error);
+      hideResult("error");
+      showStatus(status, displayError(error), true);
     } finally {
       submit.disabled = false;
     }

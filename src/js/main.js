@@ -20,7 +20,9 @@ import { initSimulationPage } from "./simulation.js";
 import { initComparisonPage } from "./comparison.js";
 import { initDemoPage } from "./demo.js";
 
-import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage } from "./auth.js";
+import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage, hasManagementRole } from "./auth.js";
+import { initDashboard } from "./dashboard.js";
+import { initDashboardExport } from "./dashboard-export.js";
 
 // ===== Anmeldung (FE #4, US-01) =====
 // Die Anmeldung wird einmal gelesen und an alle Stellen weitergegeben, damit eine
@@ -35,6 +37,23 @@ if (document.body.dataset.requiresLogin === "true") {
 
 // Kopfzeile: "Anmelden" bzw. "angemeldet als … · Abmelden"
 renderAuthStatus(document.getElementById("auth-status"), session);
+
+// US-11: Der Navigationspunkt wird nur bei einer vom Backend gelieferten Management-Rolle angezeigt.
+if (session.status === "valid" && hasManagementRole(session)) {
+  const nav = document.querySelector(".main-nav");
+  const link = document.createElement("a");
+  link.href = "dashboard.html";
+  link.className = "nav-link";
+  link.textContent = "Auswertungen";
+  if (currentPage === "dashboard.html") link.classList.add("active");
+  nav?.insertBefore(link, document.getElementById("auth-status"));
+}
+
+if (document.getElementById("dashboard-content")) {
+  initDashboard({ session });
+  // US-12 (FE #52): CSV-Export des gewählten Monats
+  initDashboardExport({ session });
+}
 
 // Portfolio-Editor nur mit Anmeldung (US-03); die Anlagensuche bleibt öffentlich (US-02)
 protectSection(document.getElementById("portfolio-editor"), session, currentPage);
