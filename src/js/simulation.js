@@ -134,6 +134,14 @@ export async function startSimulation(input, token, run = runSimulation) {
   }
 }
 
+// KI-Log ME-[Nr.]: Ausblenden des alten Ergebnisses mit KI erstellt, von Mert Eminel geprüft (FE #54, H2)
+// Ein Ergebnis bleibt nur nach einem erfolgreichen Lauf sichtbar. Nach ungültigen Eingaben oder einer
+// Fehlermeldung wird das Ergebnis des vorherigen Laufs ausgeblendet, damit es nicht zur fehlerhaften
+// Eingabe zu gehören scheint (H2, Abnahmeprotokoll Sprint 4). Gilt für Simulation und Vergleich.
+export function isResultVisibleAfter(status) {
+  return status === "done";
+}
+
 // Kennzahlen unter dem Diagramm: Endwerte, eingezahlter Betrag und Datengrundlage
 export function summarizeSimulation(result) {
   const last = result.timeline[result.timeline.length - 1];
@@ -312,6 +320,11 @@ export function initSimulationPage(root = document) {
     setStatus(MESSAGES.running);
     const outcome = await startSimulation(input, getToken());
     submitButton.disabled = false;
+
+    // H2: Ergebnis des vorherigen Laufs nach einem Fehler ausblenden (mit ihm das Speichern-Formular)
+    if (!isResultVisibleAfter(outcome.status)) {
+      resultSection.hidden = true;
+    }
 
     if (outcome.status === "invalid") {
       setStatus("");
