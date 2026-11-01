@@ -15,6 +15,7 @@ import {
   saveSession,
   readSession,
   getToken,
+  hasManagementRole,
   isUnauthorized,
   safeNextPage,
   loginRedirectFor,
@@ -283,4 +284,18 @@ test("only known pages are allowed as return target", () => {
 test("401 from the backend is recognised as missing login", () => {
   assert.equal(isUnauthorized(new ApiError(401, "UNAUTHORIZED", "Bitte melde dich an.")), true);
   assert.equal(isUnauthorized(new ApiError(404, "NOT_FOUND", "Portfolio nicht gefunden.")), false);
+});
+
+test("only the role MANAGER from the login response opens the management area", () => {
+  const expiresAt = new Date(Date.now() + 60_000).toISOString();
+  const roleAfterLogin = (role) => {
+    const storage = createStorage();
+    saveSession({ token: "abc", expiresAt, role }, "a@b.de", storage);
+    return hasManagementRole(readSession(storage));
+  };
+
+  assert.equal(roleAfterLogin("MANAGER"), true);
+  assert.equal(roleAfterLogin("USER"), false);
+  assert.equal(roleAfterLogin("MANAGEMENT"), false);
+  assert.equal(roleAfterLogin(undefined), false);
 });
