@@ -85,17 +85,13 @@ function browserStorage() {
 export function saveSession(loginResponse, email, storage = browserStorage()) {
   const session = { token: loginResponse.token, expiresAt: loginResponse.expiresAt, email };
   if (loginResponse.role !== undefined) session.role = loginResponse.role;
-  if (loginResponse.roles !== undefined) session.roles = loginResponse.roles;
   storage?.setItem(SESSION_KEY, JSON.stringify(session));
   return session;
 }
 
-// Management navigation is shown only when the API supplied a recognized role.
+// Die Auswertungen sind nur für die vom Backend gelieferte Rolle MANAGER sichtbar (E40).
 export function hasManagementRole(session) {
-  const roles = [session?.role, ...(Array.isArray(session?.roles) ? session.roles : [])]
-    .filter((role) => typeof role === "string")
-    .map((role) => role.trim().toUpperCase().replace(/[Ä]/g, "AE").replace(/[^A-Z0-9]/g, ""));
-  return roles.some((role) => ["GESCHAEFTSFUEHRUNG", "MANAGEMENT", "BUSINESSMANAGEMENT"].includes(role));
+  return session?.role === "MANAGER";
 }
 
 export function clearSession(storage = browserStorage()) {
