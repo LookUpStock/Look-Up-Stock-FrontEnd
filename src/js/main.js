@@ -22,6 +22,7 @@ import { initDemoPage } from "./demo.js";
 
 import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage, hasManagementRole } from "./auth.js";
 import { initDashboard } from "./dashboard.js";
+import { initDashboardExport } from "./dashboard-export.js";
 
 // ===== Anmeldung (FE #4, US-01) =====
 // Die Anmeldung wird einmal gelesen und an alle Stellen weitergegeben, damit eine
@@ -50,6 +51,8 @@ if (session.status === "valid" && hasManagementRole(session)) {
 
 if (document.getElementById("dashboard-content")) {
   initDashboard({ session });
+  // US-12 (FE #52): CSV-Export des gewählten Monats
+  initDashboardExport({ session });
 }
 
 // Portfolio-Editor nur mit Anmeldung (US-03); die Anlagensuche bleibt öffentlich (US-02)
