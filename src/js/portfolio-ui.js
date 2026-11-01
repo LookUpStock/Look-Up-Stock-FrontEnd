@@ -73,6 +73,27 @@ function setFieldError(inputElement, errorElement, message) {
   inputElement.setAttribute("aria-invalid", message ? "true" : "false");
 }
 
+// KI-Log ME-[Nr.]: Anzeige der Feldmeldungen nach Absenden oder Verlassen mit KI erstellt, von Mert Eminel geprüft (FE #56, H4)
+// Festlegung des Product Owners (Sprint-Planning-Protokoll Sprint 5, Abschnitt 9): Meldungen an einem Feld
+// erscheinen erst, nachdem der Nutzer das Feld verlassen oder zum ersten Mal gespeichert hat. Die Prüfung
+// selbst (validatePortfolio) und die Anzeige „gültig/ungültig“ der Summe laufen weiter bei jeder Eingabe.
+// Schlüssel in touched: "name", "total" (Gewichte bzw. Positionen bearbeitet), "<positionId>:<feld>".
+export function visibleEditorErrors(errors, { submitted = false, touched = new Set(), positionIds = [] } = {}) {
+  const show = (key) => submitted || touched.has(key);
+  return {
+    name: show("name") ? errors.name : "",
+    totalWeightPct: show("total") ? errors.totalWeightPct : "",
+    positions: errors.positions.map((positionErrors, index) => {
+      const id = positionIds[index];
+      return {
+        symbol: show(`${id}:symbol`) ? positionErrors.symbol : "",
+        name: show(`${id}:name`) ? positionErrors.name : "",
+        weightPct: show(`${id}:weightPct`) ? positionErrors.weightPct : "",
+      };
+    }),
+  };
+}
+
 function setSummaryState(summaryStatusElement, hasErrors) {
   summaryStatusElement.classList.toggle("summary-status-valid", !hasErrors);
   summaryStatusElement.classList.toggle("summary-status-invalid", hasErrors);
@@ -101,8 +122,15 @@ export function initPortfolioEditor(rootDocument = document) {
   const savedHintElement = rootDocument.getElementById("saved-portfolios-hint");
   const savedListElement = rootDocument.getElementById("saved-portfolios-list");
 
-  // Fehlende Anlagen erst nach dem ersten Speicherversuch markieren, nicht schon beim Tippen
-  let showAssetErrors = false;
+  // Fehlende Anlagen und alle übrigen Feldmeldungen erst nach dem ersten Speicherversuch markieren (H4)
+  let submitted = false;
+  // Felder, die der Nutzer schon verlassen hat; deren Meldungen erscheinen auch vor dem Speichern (H4)
+  const touched = new Set();
+
+  function markTouched(...keys) {
+    for (const key of keys) touched.add(key);
+    updateSummaryAndErrors();
+  }
 
   function setSaveStatus(message, isError) {
     saveStatusElement.textContent = message;
@@ -119,7 +147,12 @@ export function initPortfolioEditor(rootDocument = document) {
   function updateSummaryAndErrors() {
     const portfolio = buildPortfolioModel(state);
     const validation = validatePortfolio(portfolio);
-    const assetErrors = showAssetErrors ? missingAssetErrors(portfolio) : [];
+    const assetErrors = submitted ? missingAssetErrors(portfolio) : [];
+    const visible = visibleEditorErrors(validation.errors, {
+      submitted,
+      touched,
+      positionIds: state.positions.map((position) => position.id),
+    });
     const totalWeightPct = calculateTotalWeight(portfolio);
     const hasErrors = !validation.valid;
     const hasInvalidWeights = validation.errors.positions.some((positionErrors) => positionErrors.weightPct);
@@ -128,14 +161,14 @@ export function initPortfolioEditor(rootDocument = document) {
     totalValueElement.textContent = hasInvalidWeights ? "—" : `${formatWeightInput(totalWeightPct)} %`;
     totalStatusElement.textContent = hasErrors ? "ungültig" : "gültig";
     setSummaryState(totalStatusElement, hasErrors);
-    totalErrorElement.textContent = validation.errors.totalWeightPct;
-    portfolioNameError.textContent = validation.errors.name;
-    portfolioNameInput.setAttribute("aria-invalid", validation.errors.name ? "true" : "false");
+    totalErrorElement.textContent = visible.totalWeightPct;
+    portfolioNameError.textContent = visible.name;
+    portfolioNameInput.setAttribute("aria-invalid", visible.name ? "true" : "false");
 
     const positionRows = positionsList.querySelectorAll("[data-position-id]");
 
     positionRows.forEach((rowElement, index) => {
-      const positionErrors = validation.errors.positions[index];
+      const positionErrors = visible.positions[index];
       const positionId = rowElement.getAttribute("data-position-id");
       const rowState = state.positions.find((position) => position.id === positionId);
 
@@ -224,7 +257,13 @@ export function initPortfolioEditor(rootDocument = document) {
         updateSummaryAndErrors();
       });
 
+      // H4: Meldungen eines Feldes erst nach dem Verlassen anzeigen
+      symbolInput.addEventListener("blur", () => markTouched(`${position.id}:symbol`));
+      nameInput.addEventListener("blur", () => markTouched(`${position.id}:name`));
+      weightInput.addEventListener("blur", () => markTouched(`${position.id}:weightPct`, "total"));
+
       removeButton.addEventListener("click", () => {
+        touched.add("total");
         state.positions = state.positions.filter((item) => item.id !== position.id);
         renderPositions();
 
@@ -256,6 +295,7 @@ export function initPortfolioEditor(rootDocument = document) {
     state.name = event.target.value;
     updateSummaryAndErrors();
   });
+  portfolioNameInput.addEventListener("blur", () => markTouched("name"));
 
   addPositionButton.addEventListener("click", () => {
     const position = createDraftPosition();
@@ -271,11 +311,13 @@ export function initPortfolioEditor(rootDocument = document) {
       return;
     }
 
+    touched.add("total");
     state.positions = toDraftPositions(normalizePortfolioWeights(portfolio));
     renderPositions();
   });
 
   equalizeButton.addEventListener("click", () => {
+    touched.add("total");
     state.positions = toDraftPositions(equalizePortfolioWeights(buildPortfolioModel(state)));
     renderPositions();
   });
@@ -304,7 +346,7 @@ export function initPortfolioEditor(rootDocument = document) {
   });
 
   saveButton.addEventListener("click", async () => {
-    showAssetErrors = true;
+    submitted = true;
     const validation = updateSummaryAndErrors();
     const portfolio = buildPortfolioModel(state);
 
@@ -338,6 +380,9 @@ export function initPortfolioEditor(rootDocument = document) {
     // Gespeicherte API-Daten als bearbeitbaren Entwurf in den Editor übernehmen.
     const draft = toEditorDraft(saved);
     editingPortfolioId = saved.id;
+    // Neu geladenes Portfolio: Meldungen wieder erst nach Verlassen oder Speichern (H4)
+    submitted = false;
+    touched.clear();
     state.name = draft.name;
     state.positions = draft.positions.map(createDraftPosition);
     setSaveStatus("", false);

@@ -142,6 +142,14 @@ export function isResultVisibleAfter(status) {
   return status === "done";
 }
 
+// KI-Log ME-[Nr.]: Gemeinsame Statuszeile mit KI erstellt, von Mert Eminel geprüft (FE #55, H3)
+// Statuszeile unter dem Formular. Fehlermeldungen werden rot hervorgehoben (Klasse summary-status-invalid),
+// Hinweise wie „Simulation läuft …“ nicht. Simulation und Vergleich nutzen dieselbe Funktion (H3).
+export function showStatus(element, text, isError = false) {
+  element.textContent = text;
+  element.classList.toggle("summary-status-invalid", isError);
+}
+
 // Kennzahlen unter dem Diagramm: Endwerte, eingezahlter Betrag und Datengrundlage
 export function summarizeSimulation(result) {
   const last = result.timeline[result.timeline.length - 1];
@@ -228,8 +236,7 @@ export function initSimulationPage(root = document) {
   }
 
   function setStatus(text, isError = false) {
-    statusElement.textContent = text;
-    statusElement.classList.toggle("summary-status-invalid", isError);
+    showStatus(statusElement, text, isError);
   }
 
   async function loadPortfolios() {
