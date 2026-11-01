@@ -150,6 +150,11 @@ export function listPortfolios(token) {
   return request("/portfolios", { token });
 }
 
+// Eigenes Portfolio abrufen (GET /api/v1/portfolios/{id}); fremde IDs liefern 404 (NF-04).
+export function fetchPortfolio(token, portfolioId) {
+  return request(`/portfolios/${encodeURIComponent(portfolioId)}`, { token });
+}
+
 // KI-Log ME-40: Endpunkte für gespeicherte Simulationen mit KI erstellt, von Mert Eminel geprüft (FE #17, US-08)
 // Simulation berechnen und unter einem Namen speichern (POST /api/v1/simulations mit save: true, 201).
 // Mit dem Seed der angezeigten Simulation entsteht dasselbe Ergebnis (E32, NF-08).

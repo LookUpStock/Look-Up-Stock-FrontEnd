@@ -2,7 +2,7 @@
 
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { request, fetchHealth, ApiError, API_BASE_URL, apiErrorText } from "../src/js/api.js";
+import { request, fetchHealth, fetchPortfolio, ApiError, API_BASE_URL, apiErrorText } from "../src/js/api.js";
 
 // Nach jedem Test das echte fetch wiederherstellen
 afterEach(() => {
@@ -26,6 +26,16 @@ test("fetchHealth calls the health endpoint and returns the response", async () 
 
   assert.deepEqual(result, { status: "ok" });
   assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/v1/ping`);
+});
+
+test("fetchPortfolio requests one portfolio with its bearer token", async () => {
+  const fetchMock = mockFetchResponse(200, { id: 5, name: "Langfristig", positions: [] });
+
+  const result = await fetchPortfolio("session-token", 5);
+
+  assert.equal(result.id, 5);
+  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/v1/portfolios/5`);
+  assert.equal(fetchMock.mock.calls[0].arguments[1].headers.Authorization, "Bearer session-token");
 });
 
 test("request sends method, JSON header and body for POST", async () => {
