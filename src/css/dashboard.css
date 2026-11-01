@@ -36,9 +36,35 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* US-12 (FE #52): Hinweis links, Button rechts wie im Wireframe; bei 360 px untereinander */
+.dashboard-export {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-small);
+  margin-top: var(--spacing-medium);
+}
+
+.dashboard-export .search-hint {
+  margin: 0;
+}
+
+.dashboard-export-status {
+  text-align: right;
+}
+
 @media (max-width: 400px) {
   .dashboard-table th,
   .dashboard-table td {
     padding: 0.5rem;
+  }
+
+  .dashboard-export button {
+    width: 100%;
+  }
+
+  .dashboard-export-status {
+    text-align: left;
   }
 }

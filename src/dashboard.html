@@ -37,6 +37,12 @@
           <tbody id="dashboard-metrics"></tbody>
         </table>
       </div>
+      <!-- US-12 (FE #52): Export laut Wireframe Docs #164 unter der Tabelle -->
+      <div class="dashboard-export">
+        <p class="search-hint">CSV-Datei für den ausgewählten Monat</p>
+        <button id="dashboard-export" type="button">CSV herunterladen</button>
+      </div>
+      <p id="dashboard-export-status" class="summary-status dashboard-export-status" role="status" aria-live="polite"></p>
       <p class="search-hint">Der Kennzahlenabruf wird aktiviert, sobald der API-Vertrag für US-11 vorliegt.</p>
     </section>
   </main>
