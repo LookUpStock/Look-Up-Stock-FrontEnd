@@ -1,3 +1,4 @@
+import { fetchUsageReport } from "./api.js";
 import { hasManagementRole, loginPageUrl, REASONS } from "./auth.js";
 
 export const DASHBOARD_METRICS = [
@@ -7,9 +8,9 @@ export const DASHBOARD_METRICS = [
   ["simulationsRun", "Durchgeführte Simulationen"],
   ["simulationsSaved", "Gespeicherte Simulationen"],
   ["comparisonsRun", "Durchgeführte Vergleiche"],
-  ["guestSimulations", "Beispielsimulationen (Gäste)"],
+  ["demoSimulationsRun", "Beispielsimulationen (Gäste)"],
   ["assetSearches", "Anlagensuchen"],
-  ["accountsAtMonthEnd", "Nutzerkonten insgesamt am Monatsende"],
+  ["totalAccounts", "Nutzerkonten insgesamt am Monatsende"],
 ];
 
 export function currentBerlinMonth(now = new Date()) {
@@ -26,22 +27,44 @@ export function formatMonth(month) {
     .format(new Date(Date.UTC(year, number - 1, 1)));
 }
 
-function renderMetrics(target, metrics) {
+export function formatTrackingDate(date) {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return "–";
+  const [year, month, day] = date.split("-");
+  return `${day}.${month}.${year}`;
+}
+
+// Backend liefert [{ key, label, value }]; hier wird die feste Reihenfolge fürs Dashboard hergestellt.
+export function normalizeUsageMetrics(metrics) {
+  const byKey = Array.isArray(metrics)
+    ? Object.fromEntries(metrics.map((metric) => [metric.key, metric]))
+    : metrics ?? {};
+  return DASHBOARD_METRICS.map(([key, fallbackLabel]) => {
+    const metric = byKey[key];
+    return {
+      key,
+      label: metric?.label ?? fallbackLabel,
+      value: typeof metric === "number" ? metric : metric?.value,
+    };
+  });
+}
+
+function renderMetrics(target, metrics, createElement) {
   target.replaceChildren();
-  for (const [key, label] of DASHBOARD_METRICS) {
-    const row = document.createElement("tr");
-    const name = document.createElement("th");
-    const value = document.createElement("td");
+  for (const metric of normalizeUsageMetrics(metrics)) {
+    const row = createElement("tr");
+    const name = createElement("th");
+    const value = createElement("td");
     name.scope = "row";
-    name.textContent = label;
-    const metric = metrics?.[key];
-    value.textContent = Number.isFinite(metric) ? new Intl.NumberFormat("de-DE").format(metric) : "–";
+    name.textContent = metric.label;
+    value.textContent = Number.isFinite(metric.value)
+      ? new Intl.NumberFormat("de-DE").format(metric.value)
+      : "–";
     row.append(name, value);
     target.append(row);
   }
 }
 
-export function initDashboard({ root = document, session, loadMetrics } = {}) {
+export function initDashboard({ root = document, session, loadMetrics = fetchUsageReport } = {}) {
   if (session?.status !== "valid") {
     window.location.replace(loginPageUrl(session?.status === "expired" ? REASONS.expired : REASONS.notLoggedIn, "dashboard.html"));
     return;
@@ -56,32 +79,47 @@ export function initDashboard({ root = document, session, loadMetrics } = {}) {
 
   const monthInput = root.getElementById("dashboard-month");
   const monthLabel = root.getElementById("dashboard-month-label");
+  const provisional = root.getElementById("dashboard-provisional");
+  const trackingSince = root.getElementById("dashboard-tracking-since");
   const tbody = root.getElementById("dashboard-metrics");
   const notice = root.getElementById("dashboard-notice");
   const nowMonth = currentBerlinMonth();
+  let requestVersion = 0;
   monthInput.max = nowMonth;
   monthInput.value = nowMonth;
 
   async function update() {
-    monthLabel.textContent = formatMonth(monthInput.value);
-    const isCurrentMonth = monthInput.value === nowMonth;
-    root.getElementById("dashboard-provisional").hidden = !isCurrentMonth;
+    const version = ++requestVersion;
+    const month = monthInput.value;
+    monthLabel.textContent = month ? formatMonth(month) : "";
+    provisional.hidden = true;
+    trackingSince.textContent = "";
+    tbody.replaceChildren();
     notice.textContent = "";
+
+    if (!month) {
+      notice.textContent = "Bitte wähle einen Monat aus.";
+      return;
+    }
+
+    notice.textContent = "Auswertungen werden geladen …";
     try {
-      const result = loadMetrics ? await loadMetrics(monthInput.value, session.token) : null;
-      if (!result || result.available === false) {
-        tbody.replaceChildren();
-        notice.textContent = "Für diesen Monat liegen keine Auswertungen vor.";
-        return;
-      }
-      renderMetrics(tbody, result.metrics ?? result);
+      const result = await loadMetrics(session.token, month);
+      if (version !== requestVersion) return;
+      provisional.hidden = !result.preliminary;
+      trackingSince.textContent = `Erfassung seit ${formatTrackingDate(result.trackingSince)}`;
+      renderMetrics(tbody, result.metrics, root.createElement.bind(root));
+      notice.textContent = "";
     } catch (error) {
+      if (version !== requestVersion) return;
       tbody.replaceChildren();
-      notice.textContent = error?.status === 401
-        ? "Bitte melde dich erneut an."
-        : error?.status === 403
-          ? "Dafür fehlt die Berechtigung."
-          : "Die Auswertungen konnten nicht geladen werden.";
+      notice.textContent = error?.status === 400
+        ? error.message
+        : error?.status === 401
+          ? "Bitte melde dich erneut an."
+          : error?.status === 403
+            ? "Dafür fehlt die Berechtigung."
+            : "Die Auswertungen konnten nicht geladen werden.";
     }
   }
 
