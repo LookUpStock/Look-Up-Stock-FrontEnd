@@ -1,6 +1,7 @@
 // KI-Log Nr. 23: Einstiegspunkt mit KI erstellt, vom Team geprüft und angepasst
 
 import { fetchHealth } from "./api.js";
+import { addDashboardNavigationLink } from "./dashboard-navigation.js";
 
 function normalizeLocalhostOrigin() {
   if (window.location.hostname !== "127.0.0.1") {
@@ -20,7 +21,7 @@ import { initSimulationPage } from "./simulation.js";
 import { initComparisonPage } from "./comparison.js";
 import { initDemoPage } from "./demo.js";
 
-import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage, hasManagementRole } from "./auth.js";
+import { readSession, renderAuthStatus, requireLogin, protectSection, initLoginPage } from "./auth.js";
 import { initDashboard } from "./dashboard.js";
 import { initDashboardExport } from "./dashboard-export.js";
 
@@ -38,16 +39,8 @@ if (document.body.dataset.requiresLogin === "true") {
 // Kopfzeile: "Anmelden" bzw. "angemeldet als … · Abmelden"
 renderAuthStatus(document.getElementById("auth-status"), session);
 
-// US-11: Der Navigationspunkt wird nur bei einer vom Backend gelieferten Management-Rolle angezeigt.
-if (session.status === "valid" && hasManagementRole(session)) {
-  const nav = document.querySelector(".main-nav");
-  const link = document.createElement("a");
-  link.href = "dashboard.html";
-  link.className = "nav-link";
-  link.textContent = "Auswertungen";
-  if (currentPage === "dashboard.html") link.classList.add("active");
-  nav?.insertBefore(link, document.getElementById("auth-status"));
-}
+// US-11: Dashboard-Link nur für angemeldete Nutzer mit Management-Rolle (E40).
+addDashboardNavigationLink(document, session, currentPage);
 
 if (document.getElementById("dashboard-content")) {
   initDashboard({ session });
