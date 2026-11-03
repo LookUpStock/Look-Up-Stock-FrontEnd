@@ -12,8 +12,9 @@
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-// Größe der Zeichenfläche; das SVG skaliert über viewBox auf die Breite der Karte
-export const CHART_SIZE = { width: 720, height: 360, top: 16, right: 16, bottom: 40, left: 96 };
+// Linker Platz für lange Euro-Ticklabels, auch bei der gemeinsamen Vergleichsskala (H8).
+// Das SVG skaliert die Zeichenfläche über viewBox auf die Breite der Karte.
+export const CHART_SIZE = { width: 720, height: 360, top: 16, right: 16, bottom: 40, left: 160 };
 
 const MAX_Y_TICKS = 5;
 const MAX_X_TICKS = 8;
