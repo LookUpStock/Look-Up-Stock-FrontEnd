@@ -199,3 +199,9 @@ export function fetchDemoPortfolios() {
 export function runDemoSimulation(portfolioId, parameters) {
   return request("/demo/simulations", { method: "POST", body: { portfolioId, parameters } });
 }
+
+/** Nutzungskennzahlen eines Monats abrufen (GET /api/v1/reports/usage, US-11). */
+export function fetchUsageReport(token, month) {
+  const params = new URLSearchParams({ month });
+  return request(`/reports/usage?${params}`, { token });
+}

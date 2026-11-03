@@ -2,7 +2,7 @@
 
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { request, fetchHealth, fetchPortfolio, ApiError, API_BASE_URL, apiErrorText } from "../src/js/api.js";
+import { request, fetchHealth, fetchPortfolio, fetchUsageReport, ApiError, API_BASE_URL, apiErrorText } from "../src/js/api.js";
 
 // Nach jedem Test das echte fetch wiederherstellen
 afterEach(() => {
@@ -163,4 +163,13 @@ test("apiErrorText appends the detail messages for other errors", () => {
 test("apiErrorText returns null for errors that do not come from the API", () => {
   assert.equal(apiErrorText(new Error("kaputt")), null);
   assert.equal(apiErrorText(undefined), null);
+});
+test("fetchUsageReport requests the selected month with the management bearer token", async () => {
+  const fetchMock = mockFetchResponse(200, { month: "2026-11", preliminary: true, trackingSince: "2026-10-27", metrics: [] });
+
+  const result = await fetchUsageReport("manager-token", "2026-11");
+
+  assert.equal(result.month, "2026-11");
+  assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/v1/reports/usage?month=2026-11`);
+  assert.equal(fetchMock.mock.calls[0].arguments[1].headers.Authorization, "Bearer manager-token");
 });
