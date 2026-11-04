@@ -7,7 +7,7 @@ Die Oberfläche gibt es als MPA (eine HTML-Seite je Funktion) und als SPA-Touchp
 ## Tech-Stack
 
 - HTML, CSS, JavaScript (ES-Module, ohne Framework und ohne Build-Schritt)
-- Node.js für die Tests (eingebauter Test-Runner `node:test`) und für den Start auf Heroku; einzige Abhängigkeit ist `serve`
+- Node.js für die Tests (eingebauter Test-Runner `node:test`) und für den Start auf Heroku; Abhängigkeiten sind `serve` und `serve-handler`
 
 ## Voraussetzungen
 
@@ -55,7 +55,7 @@ Die Adresse wird beim Laden anhand des Hostnamens gewählt; eine Umgebungsvariab
 
 ## Deployment (Heroku)
 
-Die Heroku-App des Frontends wird aus `main` dieses Repositorys bereitgestellt. Heroku installiert die Abhängigkeiten und startet `npm start`, also `serve src -l $PORT`. Ein Build-Schritt ist nicht nötig.
+Die Heroku-App des Frontends wird aus `main` dieses Repositorys bereitgestellt. Heroku installiert die Abhängigkeiten und startet `npm start`, also `node server.js`. Der kleine Server in `server.js` leitet Aufrufe über http mit `308` auf https um (NF-05, FE #81; maßgeblich ist der Header `X-Forwarded-Proto` des Heroku-Routers) und liefert sonst `src/` mit `serve-handler` aus, mit denselben Einstellungen wie zuvor `serve src`. Ein Build-Schritt ist nicht nötig.
 
 ## Projektstruktur
 
