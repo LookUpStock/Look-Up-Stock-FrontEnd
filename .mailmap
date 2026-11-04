@@ -1,0 +1,8 @@
+# Ein Name je Person in der Commit-Historie (git shortlog -sn, git log)
+# Aufbau: Name <E-Mail laut Mailmap> Name im Commit <E-Mail im Commit>
+Mert Eminel <mmerteminel38@gmail.de>
+Mert Eminel <mmerteminel38@gmail.de> <126723960+KujoBaraka@users.noreply.github.com>
+Paul Kaufmann <pfkaufmann@icloud.com>
+Peter Orban <peterorbanistvan@gmail.com>
+Carl Stibbe <carlstibbe@icloud.com>
+Carl Stibbe <carlstibbe@icloud.com> <car.stibbe.25@lehre.mosbach.dhbw.de>
