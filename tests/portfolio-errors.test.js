@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createPortfolio, validatePortfolio } from "../src/js/portfolio.js";
-import { visibleEditorErrors } from "../src/js/portfolio-ui.js";
+import { totalStatusDisplay, visibleEditorErrors } from "../src/js/portfolio-ui.js";
 
 // Leerer Editor direkt nach dem Laden: kein Name, eine leere Position
 const emptyErrors = validatePortfolio(createPortfolio("", [{ id: "p1", symbol: "", name: "", weightPct: Number.NaN }])).errors;
@@ -53,4 +53,24 @@ test("a valid portfolio shows no messages even after saving (H4)", () => {
   assert.equal(visible.name, "");
   assert.equal(visible.totalWeightPct, "");
   assert.deepEqual(visible.positions, [{ symbol: "", name: "", weightPct: "" }]);
+});
+
+test("the empty editor shows a neutral weight sum status (FE #69, H9)", () => {
+  const status = totalStatusDisplay({ hasErrors: true, weightInputs: [""] });
+
+  assert.deepEqual(status, { text: "—", state: "neutral" });
+});
+
+test("entering a weight shows the weight sum status (FE #69, H9)", () => {
+  assert.deepEqual(totalStatusDisplay({ hasErrors: true, weightInputs: ["40"] }), { text: "ungültig", state: "invalid" });
+  assert.deepEqual(totalStatusDisplay({ hasErrors: false, weightInputs: ["100"] }), { text: "gültig", state: "valid" });
+});
+
+test("saving or editing the sum ends the neutral status even without weights (FE #69, H9)", () => {
+  assert.equal(totalStatusDisplay({ hasErrors: true, submitted: true, weightInputs: [""] }).state, "invalid");
+  assert.equal(totalStatusDisplay({ hasErrors: true, touched: new Set(["total"]), weightInputs: [""] }).state, "invalid");
+});
+
+test("whitespace in the weight field counts as no input (FE #69, H9)", () => {
+  assert.equal(totalStatusDisplay({ hasErrors: true, weightInputs: ["  "] }).state, "neutral");
 });
