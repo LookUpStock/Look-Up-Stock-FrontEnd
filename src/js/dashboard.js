@@ -83,6 +83,10 @@ export function initDashboard({ root = document, session, loadMetrics = fetchUsa
   const trackingSince = root.getElementById("dashboard-tracking-since");
   const tbody = root.getElementById("dashboard-metrics");
   const notice = root.getElementById("dashboard-notice");
+  const setNotice = (message) => {
+    notice.textContent = message;
+    notice.hidden = !message;
+  };
   const nowMonth = currentBerlinMonth();
   let requestVersion = 0;
   monthInput.max = nowMonth;
@@ -95,31 +99,31 @@ export function initDashboard({ root = document, session, loadMetrics = fetchUsa
     provisional.hidden = true;
     trackingSince.textContent = "";
     tbody.replaceChildren();
-    notice.textContent = "";
+    setNotice("");
 
     if (!month) {
-      notice.textContent = "Bitte wähle einen Monat aus.";
+      setNotice("Bitte wähle einen Monat aus.");
       return;
     }
 
-    notice.textContent = "Auswertungen werden geladen …";
+    setNotice("Auswertungen werden geladen …");
     try {
       const result = await loadMetrics(session.token, month);
       if (version !== requestVersion) return;
       provisional.hidden = !result.preliminary;
       trackingSince.textContent = `Erfassung seit ${formatTrackingDate(result.trackingSince)}`;
       renderMetrics(tbody, result.metrics, root.createElement.bind(root));
-      notice.textContent = "";
+      setNotice("");
     } catch (error) {
       if (version !== requestVersion) return;
       tbody.replaceChildren();
-      notice.textContent = error?.status === 400
+      setNotice(error?.status === 400
         ? error.message
         : error?.status === 401
           ? "Bitte melde dich erneut an."
           : error?.status === 403
             ? "Dafür fehlt die Berechtigung."
-            : "Die Auswertungen konnten nicht geladen werden.";
+            : "Die Auswertungen konnten nicht geladen werden.");
     }
   }
 
