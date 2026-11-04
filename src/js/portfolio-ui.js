@@ -94,9 +94,20 @@ export function visibleEditorErrors(errors, { submitted = false, touched = new S
   };
 }
 
-function setSummaryState(summaryStatusElement, hasErrors) {
-  summaryStatusElement.classList.toggle("summary-status-valid", !hasErrors);
-  summaryStatusElement.classList.toggle("summary-status-invalid", hasErrors);
+// Anzeige „gültig/ungültig“ der Gewichtssumme (FE #69, H9): Solange kein Gewicht eingegeben,
+// keine Gewichtssumme bearbeitet und noch nicht gespeichert wurde, bleibt die Anzeige neutral („—“ ohne Farbe).
+// Ein geladenes Portfolio hat Gewichte und zeigt deshalb sofort seinen Status.
+export function totalStatusDisplay({ hasErrors, submitted = false, touched = new Set(), weightInputs = [] }) {
+  const weightEntered = weightInputs.some((weightInput) => String(weightInput ?? "").trim() !== "");
+  if (!submitted && !touched.has("total") && !weightEntered) {
+    return { text: "—", state: "neutral" };
+  }
+  return hasErrors ? { text: "ungültig", state: "invalid" } : { text: "gültig", state: "valid" };
+}
+
+function setSummaryState(summaryStatusElement, state) {
+  summaryStatusElement.classList.toggle("summary-status-valid", state === "valid");
+  summaryStatusElement.classList.toggle("summary-status-invalid", state === "invalid");
 }
 
 export function initPortfolioEditor(rootDocument = document) {
@@ -159,8 +170,14 @@ export function initPortfolioEditor(rootDocument = document) {
 
     portfolioNameInput.value = state.name;
     totalValueElement.textContent = hasInvalidWeights ? "—" : `${formatWeightInput(totalWeightPct)} %`;
-    totalStatusElement.textContent = hasErrors ? "ungültig" : "gültig";
-    setSummaryState(totalStatusElement, hasErrors);
+    const totalStatus = totalStatusDisplay({
+      hasErrors,
+      submitted,
+      touched,
+      weightInputs: state.positions.map((position) => position.weightInput),
+    });
+    totalStatusElement.textContent = totalStatus.text;
+    setSummaryState(totalStatusElement, totalStatus.state);
     totalErrorElement.textContent = visible.totalWeightPct;
     portfolioNameError.textContent = visible.name;
     portfolioNameInput.setAttribute("aria-invalid", visible.name ? "true" : "false");
