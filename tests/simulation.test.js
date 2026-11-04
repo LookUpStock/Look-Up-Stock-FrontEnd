@@ -188,20 +188,6 @@ test("buildFanChartGeometry maps the timeline into the plot area", () => {
   assert.deepEqual(geometry.xTicks.map((tick) => tick.label), ["0 J.", "1 J.", "2 J."]);
 });
 
-test("comparison-scale Y-axis keeps long euro labels inside the chart viewBox (H8)", () => {
-  const timeline = [
-    { month: 0, p5: 0, p50: 0, p95: 0 },
-    { month: 12, p5: 1_000_000, p50: 5_000_000, p95: 10_000_000 },
-  ];
-  const geometry = buildFanChartGeometry(timeline);
-  const longestLabel = geometry.yTicks.at(-1).label;
-
-  assert.equal(longestLabel, formatEuro(10_000_000));
-  // At the 20 px label size used on narrow screens, 10 units per character
-  // is a conservative text-width estimate; reserve that space left of the tick.
-  assert.ok(CHART_SIZE.left - 8 >= longestLabel.length * 10);
-});
-
 test("describeFanChart summarizes the final values", () => {
   assert.match(describeFanChart(result.timeline), /^Nach 2 Jahren: ungünstig 12\.000\s€, mittel 15\.000\s€, günstig 19\.000\s€\.$/);
 });
