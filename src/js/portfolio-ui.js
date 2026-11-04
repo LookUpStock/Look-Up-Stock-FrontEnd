@@ -76,7 +76,7 @@ function setFieldError(inputElement, errorElement, message) {
 // KI-Log ME-[Nr.]: Anzeige der Feldmeldungen nach Absenden oder Verlassen mit KI erstellt, von Mert Eminel geprüft (FE #56, H4)
 // Festlegung des Product Owners (Sprint-Planning-Protokoll Sprint 5, Abschnitt 9): Meldungen an einem Feld
 // erscheinen erst, nachdem der Nutzer das Feld verlassen oder zum ersten Mal gespeichert hat. Die Prüfung
-// selbst (validatePortfolio) und die Anzeige „gültig/ungültig“ der Summe laufen weiter bei jeder Eingabe.
+// selbst (validatePortfolio) läuft immer; der Summenstatus erscheint ab der ersten Gewichtsänderung.
 // Schlüssel in touched: "name", "total" (Gewichte bzw. Positionen bearbeitet), "<positionId>:<feld>".
 export function visibleEditorErrors(errors, { submitted = false, touched = new Set(), positionIds = [] } = {}) {
   const show = (key) => submitted || touched.has(key);
@@ -271,6 +271,7 @@ export function initPortfolioEditor(rootDocument = document) {
 
       weightInput.addEventListener("input", (event) => {
         position.weightInput = event.target.value;
+        touched.add("total");
         updateSummaryAndErrors();
       });
 
