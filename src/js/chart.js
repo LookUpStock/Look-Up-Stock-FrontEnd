@@ -15,6 +15,13 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 // Größe der Zeichenfläche; das SVG skaliert über viewBox auf die Breite der Karte
 export const CHART_SIZE = { width: 720, height: 360, top: 16, right: 16, bottom: 40, left: 96 };
 
+// Geschätzte Breite der Y-Beschriftung: Schriftgröße aus .fan-chart-label (style.css),
+// eine Ziffer ist etwa 0,6 × Schriftgröße breit; Abstand zur Achse wie in renderFanChart
+const LABEL_FONT_SIZE = 20;
+const LABEL_CHAR_WIDTH_RATIO = 0.6;
+const LABEL_GAP = 8;
+const LABEL_PADDING = 4;
+
 const MAX_Y_TICKS = 5;
 const MAX_X_TICKS = 8;
 
@@ -55,24 +62,37 @@ function toPath(points) {
   return points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
 }
 
+// Linker Rand, damit die längste Y-Beschriftung vollständig sichtbar ist (FE #68).
+// size.left bleibt die Untergrenze.
+export function leftMarginForLabels(labels, minLeft = CHART_SIZE.left) {
+  const longest = Math.max(0, ...labels.map((label) => label.length));
+  const labelWidth = Math.ceil(longest * LABEL_FONT_SIZE * LABEL_CHAR_WIDTH_RATIO);
+  return Math.max(minLeft, labelWidth + LABEL_GAP + LABEL_PADDING);
+}
+
 // Berechnet Linien, Fläche und Achsen in Koordinaten der Zeichenfläche
 export function buildFanChartGeometry(timeline, size = CHART_SIZE, yScale = null) {
-  const plotWidth = size.width - size.left - size.right;
-  const plotHeight = size.height - size.top - size.bottom;
   const lastMonth = Math.max(1, timeline[timeline.length - 1]?.month ?? 0);
 
   const { yMax, yStep } = yScale ?? buildFanChartYScale([timeline]);
 
-  const x = (month) => size.left + (month / lastMonth) * plotWidth;
+  // Beschriftungen zuerst erzeugen, weil ihre Länge den linken Rand bestimmt
+  const yValues = [];
+  for (let value = 0; value <= yMax + yStep / 2; value += yStep) {
+    yValues.push(value);
+  }
+  const left = leftMarginForLabels(yValues.map(formatEuro), size.left);
+
+  const plotWidth = size.width - left - size.right;
+  const plotHeight = size.height - size.top - size.bottom;
+
+  const x = (month) => left + (month / lastMonth) * plotWidth;
   const y = (value) => size.top + plotHeight - (value / yMax) * plotHeight;
 
   const upper = timeline.map((point) => [x(point.month), y(point.p95)]);
   const lower = timeline.map((point) => [x(point.month), y(point.p5)]);
 
-  const yTicks = [];
-  for (let value = 0; value <= yMax + yStep / 2; value += yStep) {
-    yTicks.push({ value, y: y(value), label: formatEuro(value) });
-  }
+  const yTicks = yValues.map((value) => ({ value, y: y(value), label: formatEuro(value) }));
 
   const horizonYears = lastMonth / 12;
   const everyYears = yearStep(horizonYears);
@@ -89,7 +109,7 @@ export function buildFanChartGeometry(timeline, size = CHART_SIZE, yScale = null
     p95: toPath(upper),
     yTicks,
     xTicks,
-    plot: { left: size.left, right: size.width - size.right, top: size.top, bottom: size.top + plotHeight },
+    plot: { left, right: size.width - size.right, top: size.top, bottom: size.top + plotHeight },
   };
 }
 

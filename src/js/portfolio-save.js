@@ -104,10 +104,14 @@ export function toEditorDraft(saved) {
   };
 }
 
+// Anzahl der Positionen mit Singular bei genau einer Position; gemeinsam für MPA und SPA (FE #71, H12)
+export function formatPositionCount(count) {
+  return count === 1 ? "1 Position" : `${count} Positionen`;
+}
+
 // Zweite Zeile eines gespeicherten Portfolios: Anzahl Positionen und Datum
 export function formatSavedDetails(saved) {
-  const count = saved?.positions?.length ?? 0;
-  const parts = [count === 1 ? "1 Position" : `${count} Positionen`];
+  const parts = [formatPositionCount(saved?.positions?.length ?? 0)];
   const createdAt = Date.parse(saved?.createdAt);
   if (!Number.isNaN(createdAt)) {
     parts.push(`gespeichert am ${new Date(createdAt).toLocaleDateString("de-DE")}`);

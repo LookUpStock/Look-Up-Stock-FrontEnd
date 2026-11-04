@@ -12,6 +12,7 @@ import { clearSession, readSession, renderAuthStatus } from "../auth.js";
 import { renderFanChart } from "../chart.js";
 import { startSimulation, summarizeSimulation, validateSimulationInput } from "../simulation.js";
 import { describeOpenedSimulation, formatSavedSimulationDetails } from "../saved-simulations.js";
+import { formatPositionCount } from "../portfolio-save.js";
 import { createHashRouter } from "./router.js";
 
 const root = document.getElementById("route-view");
@@ -77,7 +78,7 @@ function renderPortfolioList(section, portfolios) {
     const item = node("li", "", "spa-list-item");
     const title = link(`#/portfolios/${encodeURIComponent(portfolio.id)}`, portfolio.name);
     title.className = "saved-portfolio-name";
-    const details = node("p", `${portfolio.positions?.length ?? 0} Positionen`, "saved-portfolio-details");
+    const details = node("p", formatPositionCount(portfolio.positions?.length ?? 0), "saved-portfolio-details");
     item.append(title, details);
     list.append(item);
   }
