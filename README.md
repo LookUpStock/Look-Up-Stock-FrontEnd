@@ -1,11 +1,13 @@
 # LookUpStock – Frontend
 
-Benutzeroberfläche für LookUpStock: Anlagen suchen, Portfolios zusammenstellen und mögliche Wertverläufe per Monte-Carlo-Simulation anzeigen. Die Berechnung übernimmt das Backend (Repository `Look-Up-Stock-BackEnd`).
+Benutzeroberfläche für LookUpStock: Anlagen suchen, Portfolios zusammenstellen, mögliche Wertverläufe per Monte-Carlo-Simulation anzeigen, zwei Einträge vergleichen, Simulationen speichern, eine Beispielsimulation für Gäste und das Dashboard der Geschäftsführung mit CSV-Export. Die Berechnung übernimmt das Backend (Repository `Look-Up-Stock-BackEnd`, core-service).
+
+Die Oberfläche gibt es als MPA (eine HTML-Seite je Funktion) und als SPA-Touchpoint mit Hash-Routing (ADR-08). Online: https://lookupstockfrontend-96a9998805cb.herokuapp.com
 
 ## Tech-Stack
 
 - HTML, CSS, JavaScript (ES-Module, ohne Framework und ohne Build-Schritt)
-- Node.js nur für die Tests (eingebauter Test-Runner `node:test`, keine Abhängigkeiten)
+- Node.js für die Tests (eingebauter Test-Runner `node:test`) und für den Start auf Heroku; einzige Abhängigkeit ist `serve`
 
 ## Voraussetzungen
 
@@ -24,7 +26,7 @@ Benutzeroberfläche für LookUpStock: Anlagen suchen, Portfolios zusammenstellen
 2. In VS Code Rechtsklick auf `src/index.html` → **Open with Live Server**.
 3. Die Statusleiste oben zeigt „Backend: verbunden“, wenn die Verbindung steht.
 
-Der SPA-Touchpoint startet separat über `src/app.html`. Er verwendet Hash-Routen wie `app.html#/portfolios/5`; Hash-Routing hält Direktaufrufe auf dem statischen `serve`-Deployment funktionsfähig, ohne Server-Rewrite-Regeln. Die MPA-Seiten bleiben unverändert erreichbar und verlinken zur SPA.
+Der SPA-Touchpoint startet separat über `src/app.html`. Er verwendet Hash-Routen wie `app.html#/portfolios/5`; Hash-Routing hält Direktaufrufe auf dem statischen `serve`-Deployment funktionsfähig, ohne Server-Rewrite-Regeln. Auf Heroku leitet `serve` `app.html` mit `301` auf `/app` um (saubere URLs); der Hash bleibt erhalten, die SPA ist dort also unter `/app#/…` erreichbar, z. B. `/app#/portfolios` (ADR-08). Die MPA-Seiten bleiben unverändert erreichbar und verlinken zur SPA.
 
 Live Server muss auf **Port 5500** laufen. Die Seite sollte über `http://localhost:5500` geöffnet werden. Wenn Live Server `127.0.0.1:5500` verwendet, leitet das Frontend automatisch auf `localhost` um. Die Seiten nicht per Doppelklick öffnen (`file://`), da ES-Module und API-Aufrufe dann nicht funktionieren.
 
@@ -33,7 +35,7 @@ Live Server muss auf **Port 5500** laufen. Die Seite sollte über `http://localh
 Alle Befehle im Hauptordner dieses Repos ausführen:
 
 ```powershell
-npm install               # einmalig, erzeugt keine Abhängigkeiten
+npm install               # einmalig, installiert serve (für die Tests nicht nötig)
 npm test                  # Unit-Tests ausführen
 npm run test:coverage     # Tests mit Testabdeckung
 ```
@@ -46,34 +48,52 @@ Falls PowerShell `npm` blockiert („running scripts is disabled“): einmalig `
 
 | Wert | Ort | Standard |
 |---|---|---|
-| Backend-Adresse | `API_BASE_URL` in `src/js/config.js` | `https://lookupstock-da2951e42089.herokuapp.com` |
+| Backend-Adresse | `API_BASE_URL` in `src/js/config.js` | lokal (`localhost`, `127.0.0.1`) `http://localhost:8080`, sonst `https://lookupstock-da2951e42089.herokuapp.com` |
+| Pfad der Endpunkte | `API_PREFIX` in `src/js/config.js` | `/api/v1` |
 
-Für das Deployment auf dem Server wird `API_BASE_URL` angepasst oder per Laufzeit-Override gesetzt.
+Die Adresse wird beim Laden anhand des Hostnamens gewählt; eine Umgebungsvariable gibt es dafür nicht.
+
+## Deployment (Heroku)
+
+Die Heroku-App des Frontends wird aus `main` dieses Repositorys bereitgestellt. Heroku installiert die Abhängigkeiten und startet `npm start`, also `serve src -l $PORT`. Ein Build-Schritt ist nicht nötig.
 
 ## Projektstruktur
 
 ```
 src/
-├── index.html        Simulationsseite (Startseite)
-├── portfolio.html    Anlagensuche und Portfolio-Editor
-├── app.html           SPA-Touchpoint (Hash-Routing)
-├── css/style.css     Gemeinsame Styles (Farben als Variablen in :root)
+├── index.html             Simulationsseite (Startseite) mit Beispielsimulation für Gäste
+├── portfolio.html         Anlagensuche, Portfolio-Editor, eigene Portfolios
+├── compare.html           Vergleich zweier Portfolios oder Anlagen
+├── dashboard.html         Nutzungskennzahlen und CSV-Export (nur Rolle MANAGER)
+├── login.html             Anmeldung und Registrierung
+├── app.html               SPA-Touchpoint (Hash-Routing, ADR-08)
+├── css/style.css          Gemeinsame Styles (Farben als Variablen in :root)
 └── js/
-    ├── api.js        Alle Backend-Aufrufe, einheitliche Fehlerbehandlung (ApiError)
-    ├── main.js       Einstiegspunkt beider Seiten, prüft die Backend-Verbindung
-    ├── chart.js      Fächerdiagramm der Simulation
+    ├── config.js            Backend-Adresse und Pfad der Endpunkte
+    ├── api.js               Alle Backend-Aufrufe, einheitliche Fehlerbehandlung (ApiError)
+    ├── auth.js              Anmeldung, Registrierung, Token und Ablauf (E14)
+    ├── main.js              Einstiegspunkt der MPA-Seiten: Backend-Verbindung, Navigation nach Rolle
+    ├── search.js            Anlagensuche
+    ├── portfolio.js         Prüfregeln des Portfolios (Gewichtungen)
+    ├── portfolio-ui.js      Portfolio-Editor mit Feldmeldungen
+    ├── portfolio-save.js    Speichern, Laden, Bearbeiten und Löschen von Portfolios
+    ├── simulation.js        Eingabemaske, Prüfung und Ergebnis der Simulation
+    ├── saved-simulations.js Gespeicherte Simulationen
+    ├── chart.js             Fächerdiagramm als SVG, gemeinsame Y-Achse
+    ├── comparison.js        Vergleichsseite
+    ├── demo.js              Beispielsimulation für Gäste
+    ├── dashboard.js         Dashboard der Nutzungskennzahlen
+    ├── dashboard-export.js  CSV-Export des Dashboards
     └── spa/
-        ├── app.js    SPA-Ansichten für Portfolios und Simulationen
-        └── router.js Hash-Routen und clientseitige Navigation
-tests/
-├── api.test.js       Unit-Tests der API-Schicht
-└── router.test.js   Unit-Tests der SPA-Routen
+        ├── app.js           SPA-Ansichten für Portfolios und Simulationen
+        └── router.js        Hash-Routen und clientseitige Navigation
+tests/                       Unit-Tests je Modul (*.test.js), z. B. api.test.js, router.test.js
 ```
 
 ## Hinweise für die Umsetzung
 
 - Neue Backend-Aufrufe nur in `api.js` über `request()` ergänzen.
-- API-Fehler als `ApiError` abfangen und `error.message` im Bereich `#error-message` anzeigen; der Text kommt bereits auf Deutsch vom Backend.
+- API-Fehler als `ApiError` abfangen und den Text aus `apiErrorText()` anzeigen; er kommt bereits auf Deutsch vom Backend.
 - Bezeichner (IDs, Klassen, Funktionen) auf Englisch, Kommentare auf Deutsch.
 - Schnittstelle zum Backend: API-Design im Repository `Look-Up-Stock-Docs`.
 

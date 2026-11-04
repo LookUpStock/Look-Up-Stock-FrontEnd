@@ -1,6 +1,6 @@
-/* KI-Log Nr. 23: Basis-Styles mit KI erstellt, vom Team geprÃ¼ft und angepasst */
+/* KI-Log Nr. 23: Basis-Styles mit KI erstellt, vom Team geprüft und angepasst */
 
-/* ===== Farben, AbstÃ¤nde und Schrift zentral festlegen ===== */
+/* ===== Farben, Abstände und Schrift zentral festlegen ===== */
 :root {
   --color-primary: #1e5aa8;        /* Hauptfarbe: Kopfzeile, Buttons, Links */
   --color-primary-dark: #15427c;   /* Hover-Zustand der Hauptfarbe */
@@ -79,7 +79,7 @@ h1, h2, h3 {
   background-color: var(--color-primary-dark);
 }
 
-/* Aktuell geÃ¶ffnete Seite hervorheben */
+/* Aktuell geöffnete Seite hervorheben */
 .nav-link.active {
   background-color: #ffffff;
   color: var(--color-primary);
@@ -88,7 +88,7 @@ h1, h2, h3 {
 
 /* ===== Hauptbereich ===== */
 .page-content {
-  flex: 1;   /* schiebt die FuÃŸzeile bei wenig Inhalt nach unten */
+  flex: 1;   /* schiebt die Fußzeile bei wenig Inhalt nach unten */
   width: 100%;
   max-width: var(--max-content-width);
   margin: 0 auto;
@@ -98,7 +98,7 @@ h1, h2, h3 {
   gap: var(--spacing-large);
 }
 
-/* ===== Karten als Container fÃ¼r die Bereiche ===== */
+/* ===== Karten als Container für die Bereiche ===== */
 .card {
   padding: var(--spacing-large);
   background-color: var(--color-surface);
@@ -112,7 +112,7 @@ h1, h2, h3 {
   font-style: italic;
 }
 
-/* ===== Statusleiste fÃ¼r die Backend-Verbindung ===== */
+/* ===== Statusleiste für die Backend-Verbindung ===== */
 .status-bar {
   display: flex;
   gap: var(--spacing-small);
@@ -140,7 +140,7 @@ h1, h2, h3 {
   color: var(--color-error);
 }
 
-/* ===== Gemeinsame Formular-Elemente fÃ¼r FE #1, #2 und #3 ===== */
+/* ===== Gemeinsame Formular-Elemente für FE #1, #2 und #3 ===== */
 label {
   display: block;
   margin-bottom: 0.25rem;
@@ -303,7 +303,7 @@ button:disabled {
   gap: var(--spacing-small);
 }
 
-/* Gespeicherte Simulationen (FE #17, US-08); ListeneintrÃ¤ge wie bei den Portfolios */
+/* Gespeicherte Simulationen (FE #17, US-08); Listeneinträge wie bei den Portfolios */
 .saved-portfolio .saved-simulation-actions {
   display: flex;
   flex-direction: row;
@@ -583,7 +583,7 @@ button:disabled {
   .comparison-choices, .comparison-results { grid-template-columns: 1fr; }
 }
 
-/* ===== FuÃŸzeile ===== */
+/* ===== Fußzeile ===== */
 .site-footer {
   padding: var(--spacing-medium);
   text-align: center;
@@ -620,7 +620,7 @@ button:disabled {
 }
 
 /* ===== Anlagensuche (FE #1, US-02) ===== */
-/* KI-Log Nr. 19: Styles der Suche mit KI erstellt, von Mert Eminel geprÃ¼ft */
+/* KI-Log Nr. 19: Styles der Suche mit KI erstellt, von Mert Eminel geprüft */
 .search-label {
   display: block;
   margin-bottom: var(--spacing-small);
@@ -655,7 +655,7 @@ button:disabled {
   gap: var(--spacing-small);
 }
 
-/* Jeder Treffer ist ein Button: per Maus, Tastatur und Touch auswÃ¤hlbar */
+/* Jeder Treffer ist ein Button: per Maus, Tastatur und Touch auswählbar */
 .search-result {
   width: 100%;
   display: flex;
@@ -691,7 +691,7 @@ button:disabled {
 }
 
 /* ===== Anmeldung und Registrierung (FE #4, US-01) ===== */
-/* KI-Log Nr. [eintragen]: Styles der Anmeldung mit KI erstellt, von Mert Eminel geprÃ¼ft */
+/* KI-Log Nr. [eintragen]: Styles der Anmeldung mit KI erstellt, von Mert Eminel geprüft */
 
 /* Ausgeblendete Elemente immer verbergen, auch wenn eine Klasse "display" setzt
    (z. B. der gesperrte Portfolio-Editor ohne Anmeldung) */
@@ -718,7 +718,7 @@ button:disabled {
   overflow-wrap: anywhere;   /* lange E-Mail-Adressen umbrechen (NF-10) */
 }
 
-/* Abmelden-Button in der Kopfzeile: heller Rahmen statt gefÃ¼llter FlÃ¤che */
+/* Abmelden-Button in der Kopfzeile: heller Rahmen statt gefüllter Fläche */
 .button-link {
   padding: var(--spacing-small) var(--spacing-medium);
   background-color: transparent;
@@ -767,7 +767,7 @@ button:disabled {
   background-color: #e7f5ec;
 }
 
-/* Portfolioknï¿½pfe auf schmalen Displays innerhalb der Listeneintrï¿½ge halten (FE #57). */
+/* Portfolioknöpfe auf schmalen Displays innerhalb der Listeneinträge halten (FE #57). */
 /* Achsenbeschriftung im Fächerdiagramm bei 360 px lesbar halten (FE #58). */
 @media (max-width: 400px) {
   .saved-portfolio {
