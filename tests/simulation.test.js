@@ -13,7 +13,16 @@ import {
   targetProbabilityRow,
   validateSimulationInput,
 } from "../src/js/simulation.js";
-import { buildFanChartGeometry, CHART_SIZE, describeFanChart, formatEuro, niceStep, yearStep } from "../src/js/chart.js";
+import {
+  buildFanChartGeometry,
+  buildFanChartYScale,
+  CHART_SIZE,
+  describeFanChart,
+  formatEuro,
+  leftMarginForLabels,
+  niceStep,
+  yearStep,
+} from "../src/js/chart.js";
 
 afterEach(() => {
   mock.restoreAll();
@@ -234,4 +243,31 @@ test("targetProbabilityRow is null without target amount or probability", () => 
   assert.equal(targetProbabilityRow({ targetProbability: 0.5 }, null), null);
   assert.equal(targetProbabilityRow({ targetProbability: null }, 100000), null);
   assert.equal(targetProbabilityRow(undefined, 100000), null);
+});
+
+test("leftMarginForLabels keeps the minimum for short labels", () => {
+  assert.equal(leftMarginForLabels(["0 €"]), CHART_SIZE.left);
+  assert.equal(leftMarginForLabels([]), CHART_SIZE.left);
+});
+
+test("leftMarginForLabels grows with the longest label (FE #68)", () => {
+  const short = leftMarginForLabels([formatEuro(0), formatEuro(1000000)]);
+  const long = leftMarginForLabels([formatEuro(0), formatEuro(10000000)]);
+  assert.ok(long > short);
+});
+
+test("buildFanChartGeometry leaves room for eight-digit y labels in the comparison (FE #68)", () => {
+  // Gemeinsame Y-Achse wie auf der Vergleichsseite, höchster p95 über 10 Mio. €
+  const large = [
+    { month: 0, p5: 10000, p50: 10000, p95: 10000 },
+    { month: 480, p5: 900000, p50: 4000000, p95: 12000000 },
+  ];
+  const yScale = buildFanChartYScale([result.timeline, large]);
+  const geometry = buildFanChartGeometry(result.timeline, CHART_SIZE, yScale);
+  const longestLabel = Math.max(...geometry.yTicks.map((tick) => tick.label.length));
+
+  // Beschriftung endet 8 px vor der Achse und braucht bei 20 px etwa 12 px je Zeichen
+  assert.ok(longestLabel >= 12);
+  assert.ok(geometry.plot.left - 8 >= longestLabel * 12);
+  assert.ok(geometry.p50.startsWith(`M${geometry.plot.left.toFixed(1)},`));
 });
