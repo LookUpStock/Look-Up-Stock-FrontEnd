@@ -14,6 +14,7 @@ import { createPortfolio, createPosition } from "../src/js/portfolio.js";
 import {
   MESSAGES,
   errorMessageFrom,
+  formatPositionCount,
   formatSavedDetails,
   loadSavedPortfolios,
   missingAssetErrors,
@@ -187,4 +188,10 @@ test("formatSavedDetails shows position count and date", () => {
     "2 Positionen · gespeichert am 11.10.2026"
   );
   assert.equal(formatSavedDetails({ positions: [{}] }), "1 Position");
+});
+
+test("formatPositionCount uses the singular for exactly one position (FE #71, H12)", () => {
+  assert.equal(formatPositionCount(1), "1 Position");
+  assert.equal(formatPositionCount(0), "0 Positionen");
+  assert.equal(formatPositionCount(2), "2 Positionen");
 });
