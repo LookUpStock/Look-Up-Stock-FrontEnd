@@ -5,11 +5,12 @@
   "description": "Frontend von LookUpStock",
   "type": "module",
   "scripts": {
-    "start": "serve src -l $PORT",
+    "start": "node server.js",
     "test": "node --test \"tests/**/*.test.js\"",
     "test:coverage": "node --test --experimental-test-coverage \"tests/**/*.test.js\""
   },
   "dependencies": {
-    "serve": "^14.2.4"
+    "serve": "^14.2.4",
+    "serve-handler": "^6.1.7"
   }
 }
