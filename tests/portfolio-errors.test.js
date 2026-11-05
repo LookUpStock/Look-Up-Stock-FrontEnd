@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createPortfolio, validatePortfolio } from "../src/js/portfolio.js";
-import { totalStatusDisplay, visibleEditorErrors } from "../src/js/portfolio-ui.js";
+import { hasWeightErrors, totalStatusDisplay, visibleEditorErrors } from "../src/js/portfolio-ui.js";
 
 // Leerer Editor direkt nach dem Laden: kein Name, eine leere Position
 const emptyErrors = validatePortfolio(createPortfolio("", [{ id: "p1", symbol: "", name: "", weightPct: Number.NaN }])).errors;
@@ -73,4 +73,35 @@ test("saving or editing the sum ends the neutral status even without weights (FE
 
 test("whitespace in the weight field counts as no input (FE #69, H9)", () => {
   assert.equal(totalStatusDisplay({ hasErrors: true, weightInputs: ["  "] }).state, "neutral");
+});
+
+
+// Gewichtssumme bewertet nur die Gewichte (FE #83, H13)
+function weightSumStatus(name, weightPct, weightInput = String(weightPct)) {
+  const errors = validatePortfolio(createPortfolio(name, [{ id: "p1", symbol: "URTH", name: "iShares MSCI World ETF", weightPct }])).errors;
+  return { errors, status: totalStatusDisplay({ hasErrors: hasWeightErrors(errors), weightInputs: [weightInput] }) };
+}
+
+test("100 % without a portfolio name shows a valid weight sum (FE #83, H13)", () => {
+  const { errors, status } = weightSumStatus("", 100);
+
+  assert.deepEqual(status, { text: "gültig", state: "valid" });
+  // Der fehlende Name wird weiterhin am Namensfeld gemeldet, Speichern bleibt gesperrt
+  assert.equal(visibleEditorErrors(errors, { submitted: true, positionIds: ids }).name, "Der Portfolio-Name ist erforderlich.");
+  assert.equal(validatePortfolio(createPortfolio("", [{ id: "p1", symbol: "URTH", name: "iShares MSCI World ETF", weightPct: 100 }])).valid, false);
+});
+
+test("40 % shows an invalid weight sum with the sum message (FE #83, H13)", () => {
+  const { errors, status } = weightSumStatus("", 40);
+
+  assert.deepEqual(status, { text: "ungültig", state: "invalid" });
+  assert.equal(errors.totalWeightPct, "Die Gewichtssumme muss genau 100 % ergeben. Aktuell: 40,00 %.");
+});
+
+test("an invalid single weight makes the weight sum invalid (FE #83, H13)", () => {
+  assert.equal(weightSumStatus("Mein Weltportfolio", 100.123).status.state, "invalid");
+});
+
+test("the empty editor stays neutral (FE #83, H9 unchanged)", () => {
+  assert.deepEqual(totalStatusDisplay({ hasErrors: hasWeightErrors(emptyErrors), weightInputs: [""] }), { text: "—", state: "neutral" });
 });
