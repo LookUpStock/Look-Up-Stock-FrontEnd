@@ -5,14 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LookUpStock – Portfolios</title>
 
-  <!-- Gemeinsame Styles aller Seiten -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Einstiegspunkte; api.js wird von main.js importiert -->
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
-  <!-- KI-Log Nr. 23: HTML-Grundgerüst mit KI erstellt, vom Team geprüft und angepasst -->
 
   <header class="site-header">
     <a href="index.html" class="logo">LookUpStock</a>
@@ -27,17 +24,11 @@
   </header>
 
   <main class="page-content">
-    <!-- Verbindungsstatus zum Backend (FE #6, Prüfung über GET /api/v1/ping) -->
     <section class="status-bar">
       <span>Backend:</span>
       <span id="backend-status">wird geprüft …</span>
     </section>
 
-
-    <!-- Platzhalter für die Anlagensuche (FE #1, US-02, API-Anbindung folgt) -->
-
-    <!-- Anlagensuche (FE #1, US-02, GET /api/v1/assets/search) -->
-    <!-- KI-Log Nr. 19: Suchbereich mit KI erstellt, von Mert Eminel geprüft -->
 
     <section id="asset-search" class="card">
       <h2>Anlagen suchen</h2>
@@ -48,7 +39,6 @@
       <ul id="asset-search-results" class="search-results"></ul>
     </section>
 
-    <!-- Portfolio-Editor mit Gewichtung (FE #2, lokal im Browser) -->
     <section id="portfolio-editor" class="card portfolio-editor">
       <h2>Portfolio bearbeiten</h2>
 
@@ -78,13 +68,11 @@
         <div class="action-row">
           <button id="normalize-weights" type="button">Normalisieren</button>
           <button id="equalize-weights" type="button">Gleichgewichten</button>
-          <!-- Speichern oder Ändern im Backend (US-03/US-06) -->
           <button id="save-portfolio" type="button">Speichern</button>
         </div>
         <p id="portfolio-save-status" class="summary-status" role="status" aria-live="polite"></p>
       </form>
 
-      <!-- Eigene Portfolios; "Bearbeiten" übernimmt sie in den Editor -->
       <div class="saved-portfolios">
         <h3>Gespeicherte Portfolios</h3>
         <p id="saved-portfolios-hint" class="search-hint" aria-live="polite"></p>
@@ -92,7 +80,6 @@
       </div>
     </section>
 
-    <!-- Bereich für Fehlermeldungen aus der API (error.message) -->
     <div id="error-message" class="error-message" hidden></div>
   </main>
 

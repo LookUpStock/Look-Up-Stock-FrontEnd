@@ -1,6 +1,3 @@
-// KI-Log Nr. [eintragen]: Unit-Tests der Anmeldung mit KI erstellt, von Mert Eminel geprüft (FE #4, US-01)
-// Abnahmetestfälle: AT-01-06 (abgelaufene Anmeldung), AT-01-08 (Passwortlänge), AT-01-09 (E-Mail-Format)
-
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { registerUser, loginUser, logoutUser, ApiError, API_BASE_URL } from "../src/js/api.js";
@@ -29,7 +26,6 @@ afterEach(() => {
   mock.restoreAll();
 });
 
-// Einfacher Speicher statt localStorage, damit die Tests ohne Browser laufen
 function createStorage() {
   const data = new Map();
   return {
@@ -39,9 +35,8 @@ function createStorage() {
   };
 }
 
-// Feste Zeitpunkte statt der aktuellen Uhrzeit (wie die vorgegebene Uhr im Backend)
 const LOGIN_TIME = Date.parse("2026-10-08T10:00:00Z");
-const EXPIRES_AT = "2026-10-09T10:00:00Z"; // 24 h später (NF-16)
+const EXPIRES_AT = "2026-10-09T10:00:00Z";
 const EXPIRES_MS = Date.parse(EXPIRES_AT);
 
 function loggedInStorage() {
@@ -49,8 +44,6 @@ function loggedInStorage() {
   saveSession({ token: "abc123", expiresAt: EXPIRES_AT }, "anna@example.com", storage);
   return storage;
 }
-
-// ===== api.js: Anmelde-Endpunkte laut API-Design =====
 
 function mockFetch(status, body) {
   return mock.method(globalThis, "fetch", async () =>
@@ -94,8 +87,6 @@ test("logoutUser sends the token as Bearer header to POST /auth/logout", async (
   assert.equal(result, null);
 });
 
-// ===== AT-01-09: E-Mail-Format (E12) =====
-
 test("invalid email addresses are rejected before sending (AT-01-09)", () => {
   const tooLong = "a".repeat(256 - "@example.de".length) + "@example.de";
   assert.equal(tooLong.length, 256);
@@ -118,8 +109,6 @@ test("email is compared without upper and lower case (E11)", () => {
   assert.equal(normalizeEmail("  Anna@Example.COM "), "anna@example.com");
 });
 
-// ===== AT-01-08: Passwortlänge =====
-
 test("password with 7 characters is rejected, 8 characters are accepted (AT-01-08)", () => {
   assert.equal(validatePassword("1234567"), MESSAGES.passwordTooShort);
   assert.equal(validatePassword("12345678"), null);
@@ -136,8 +125,6 @@ test("registration with invalid input does not call the backend (AT-01-08)", asy
   assert.equal(result.errors.password, MESSAGES.passwordTooShort);
   assert.equal(register.mock.callCount(), 0);
 });
-
-// ===== Registrierung (AT-01-01, AT-01-04) =====
 
 test("successful registration does not log the user in (E13, AT-01-01)", async () => {
   const register = mock.fn(async () => ({ id: 3, email: "anna@example.com" }));
@@ -158,8 +145,6 @@ test("already registered email shows the message from the backend (AT-01-04)", a
 
   assert.deepEqual(result, { status: "error", message: "Diese E-Mail ist bereits registriert." });
 });
-
-// ===== Anmelden und Abmelden (AT-01-02, AT-01-03, AT-01-05) =====
 
 test("successful login stores token, expiry and email (AT-01-02)", async () => {
   const storage = createStorage();
@@ -220,8 +205,6 @@ test("logout removes the session even if the backend is not reachable", async ()
   assert.equal(storage.getItem(SESSION_KEY), null);
 });
 
-// ===== AT-01-06: abgelaufene Anmeldung (E14, NF-16) =====
-
 test("session is valid one second before expiry", () => {
   const storage = loggedInStorage();
 
@@ -248,7 +231,6 @@ test("expired session leads to the login page with the expiry message and no tok
 
   assert.equal(target, "login.html?grund=abgelaufen&weiter=index.html");
   assert.equal(reasonMessage(REASONS.expired), "Deine Anmeldung ist abgelaufen. Bitte melde dich erneut an.");
-  // Ohne Token wird keine geschützte Anfrage an das Backend gesendet
   assert.equal(getToken(storage, EXPIRES_MS + 1000), null);
 });
 
@@ -272,8 +254,6 @@ test("damaged session data is treated as not logged in", () => {
   assert.equal(readSession(storage, LOGIN_TIME).status, "none");
   assert.equal(storage.getItem(SESSION_KEY), null);
 });
-
-// ===== Hilfsfunktionen =====
 
 test("only known pages are allowed as return target", () => {
   assert.equal(safeNextPage("index.html"), "index.html");

@@ -1,5 +1,3 @@
-// KI-Log Nr. [eintragen]: Tests zum Speichern und Laden von Portfolios mit KI erstellt, vom Team zu prüfen (US-03)
-
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import {

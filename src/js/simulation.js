@@ -1,16 +1,12 @@
-// KI-Log Nr. [eintragen]: Eingabemaske der Simulation mit KI erstellt, vom Team zu prüfen (FE #3, US-04)
-
 import { runSimulation, apiErrorText } from "./api.js";
 import { clearSession, getToken, isUnauthorized, loginPageUrl, REASONS, MESSAGES as AUTH_MESSAGES } from "./auth.js";
 import { loadSavedPortfolios } from "./portfolio-save.js";
 import { formatEuro, renderFanChart } from "./chart.js";
 import { initSavedSimulations } from "./saved-simulations.js";
 
-// Grenzwerte und Standardwerte laut API-Design (wie SimulationParameters im Backend)
 export const LIMITS = { minHorizon: 1, maxHorizon: 40, minPaths: 1000, maxPaths: 50000 };
 export const DEFAULTS = { startCapital: "10000", monthlyContribution: "200", horizonYears: "20", paths: "10000", seed: "", targetAmount: "" };
 
-// Texte wie im Backend, damit dieselbe Eingabe dieselbe Meldung ergibt
 export const MESSAGES = {
   portfolioRequired: "Bitte ein Portfolio auswählen.",
   amountInvalid: "Bitte einen Betrag ab 0 eingeben.",
@@ -25,17 +21,11 @@ export const MESSAGES = {
   unexpected: "Ein unerwarteter Fehler ist aufgetreten.",
 };
 
-// ===== Logik: ohne Browser testbar =====
-
-// Zahl aus einem Eingabefeld; Komma als Dezimaltrennzeichen erlaubt, leer = NaN
 export function parseNumberInput(value) {
   const text = String(value ?? "").trim().replace(",", ".");
   return text === "" ? Number.NaN : Number(text);
 }
 
-// KI-Log ME-[Nr.]: Zielbetrag und Zielwahrscheinlichkeit mit KI erstellt, von Mert Eminel geprüft (FE #30, B1)
-// Optionaler Zielbetrag (US-05, E27): leer = kein Zielbetrag; sonst eine Zahl größer als 0.
-// Ergebnis: { value: Zahl oder null, error: Meldung oder undefined }
 export function parseTargetAmount(text) {
   if (String(text ?? "").trim() === "") {
     return { value: null };
@@ -47,7 +37,6 @@ export function parseTargetAmount(text) {
   return { value };
 }
 
-// Zeile „Zielwahrscheinlichkeit“ für die Kennzahlen; ohne Zielbetrag null, dann entfällt die Zeile (E27, B1)
 export function targetProbabilityRow(metrics, targetAmount) {
   const probability = metrics?.targetProbability;
   if (targetAmount == null || !Number.isFinite(probability)) {
@@ -56,8 +45,6 @@ export function targetProbabilityRow(metrics, targetAmount) {
   return [`Zielwahrscheinlichkeit (${formatEuro(targetAmount)})`, formatPercent(probability)];
 }
 
-// Prüft die Eingaben vor dem Absenden.
-// Ergebnis: { valid, errors: { feld: Meldung }, portfolioId, parameters }
 export function validateSimulationInput(input) {
   const errors = {};
   const portfolioId = Number(input.portfolioId);
@@ -96,11 +83,10 @@ export function validateSimulationInput(input) {
   }
 
   const parameters = { startCapital, monthlyContribution, horizonYears, paths };
-  // Ohne Seed wählt das Backend selbst einen und gibt ihn in der Antwort zurück
+  // Without a seed the backend picks one and returns it.
   if (seed !== null) {
     parameters.seed = seed;
   }
-  // Zielbetrag nur mitschicken, wenn er angegeben ist (E27)
   if (target.value !== null) {
     parameters.targetAmount = target.value;
   }
@@ -108,13 +94,10 @@ export function validateSimulationInput(input) {
   return { valid: Object.keys(errors).length === 0, errors, portfolioId, parameters };
 }
 
-// Meldung vom Backend; bei 422 INSUFFICIENT_DATA nennt sie jede Anlage genau einmal (B7, FE #34)
 export function simulationErrorMessage(error) {
   return apiErrorText(error) ?? MESSAGES.unexpected;
 }
 
-// Simulation prüfen und starten.
-// Ergebnis: { status: "done", result } | { status: "invalid", errors } | { status: "unauthorized" } | { status: "error", message }
 export async function startSimulation(input, token, run = runSimulation) {
   const check = validateSimulationInput(input);
   if (!check.valid) {
@@ -134,23 +117,16 @@ export async function startSimulation(input, token, run = runSimulation) {
   }
 }
 
-// KI-Log ME-[Nr.]: Ausblenden des alten Ergebnisses mit KI erstellt, von Mert Eminel geprüft (FE #54, H2)
-// Ein Ergebnis bleibt nur nach einem erfolgreichen Lauf sichtbar. Nach ungültigen Eingaben oder einer
-// Fehlermeldung wird das Ergebnis des vorherigen Laufs ausgeblendet, damit es nicht zur fehlerhaften
-// Eingabe zu gehören scheint (H2, Abnahmeprotokoll Sprint 4). Gilt für Simulation und Vergleich.
+// After an error the previous result is hidden so it does not appear to belong to the invalid input.
 export function isResultVisibleAfter(status) {
   return status === "done";
 }
 
-// KI-Log ME-[Nr.]: Gemeinsame Statuszeile mit KI erstellt, von Mert Eminel geprüft (FE #55, H3)
-// Statuszeile unter dem Formular. Fehlermeldungen werden rot hervorgehoben (Klasse summary-status-invalid),
-// Hinweise wie „Simulation läuft …“ nicht. Simulation und Vergleich nutzen dieselbe Funktion (H3).
 export function showStatus(element, text, isError = false) {
   element.textContent = text;
   element.classList.toggle("summary-status-invalid", isError);
 }
 
-// Kennzahlen unter dem Diagramm: Endwerte, eingezahlter Betrag und Datengrundlage
 export function summarizeSimulation(result) {
   const last = result.timeline[result.timeline.length - 1];
   const { startCapital, monthlyContribution, horizonYears, seed } = result.parameters;
@@ -190,8 +166,6 @@ function formatDate(isoDate) {
   return `${day}.${month}.${year}`;
 }
 
-// ===== Anzeige: verbindet die Logik mit der Seite =====
-
 const FIELDS = ["portfolioId", "startCapital", "monthlyContribution", "horizonYears", "paths", "seed", "targetAmount"];
 
 export function initSimulationPage(root = document) {
@@ -219,7 +193,6 @@ export function initSimulationPage(root = document) {
     window.location.assign(loginPageUrl(REASONS.expired, "index.html"));
   }
 
-  // Gespeicherte Simulationen (FE #17, US-08): Speichern, Liste, Öffnen und Löschen
   const savedSimulations = initSavedSimulations(root, {
     getToken,
     onUnauthorized: redirectToLogin,
@@ -253,12 +226,10 @@ export function initSimulationPage(root = document) {
     }
     if (result.status === "error") {
       portfolioHint.textContent = result.message;
-      // Liste trotzdem laden; ohne Namen erscheint „Portfolio <id>“
       savedSimulations.refresh();
       return;
     }
 
-    // Die Portfolio-ID bleibt als Auswahlwert erhalten und wird an die Simulation übergeben.
     for (const saved of result.portfolios) {
       const option = root.createElement("option");
       option.value = String(saved.id);
@@ -266,7 +237,6 @@ export function initSimulationPage(root = document) {
       select.append(option);
     }
 
-    // Portfolionamen für die Liste der gespeicherten Simulationen (FE #17)
     savedSimulations.setPortfolioNames(new Map(result.portfolios.map((saved) => [saved.id, saved.name])));
     savedSimulations.refresh();
 
@@ -302,7 +272,6 @@ export function initSimulationPage(root = document) {
     renderSummary(result);
   }
 
-  // Gespeicherte Simulation anzeigen: Eingaben wie beim Speichern, Ergebnis ohne Neuberechnung (E32)
   function showSavedSimulation(simulation) {
     const { startCapital, monthlyContribution, horizonYears, paths, seed, targetAmount } = simulation.parameters;
     inputs.portfolioId.value = String(simulation.portfolioId);
@@ -328,7 +297,6 @@ export function initSimulationPage(root = document) {
     const outcome = await startSimulation(input, getToken());
     submitButton.disabled = false;
 
-    // H2: Ergebnis des vorherigen Laufs nach einem Fehler ausblenden (mit ihm das Speichern-Formular)
     if (!isResultVisibleAfter(outcome.status)) {
       resultSection.hidden = true;
     }

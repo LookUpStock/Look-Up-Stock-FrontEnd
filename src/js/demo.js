@@ -1,11 +1,7 @@
-// KI-Log ME-[Nr.]: Beispielsimulation für Gäste auf der Startseite mit KI erstellt, von Mert Eminel geprüft (FE #38, US-09)
-
 import { fetchDemoPortfolios, runDemoSimulation, apiErrorText } from "./api.js";
 import { renderFanChart, formatEuro } from "./chart.js";
 import { summarizeSimulation } from "./simulation.js";
 
-// Feste Parameter der Beispielsimulation (US-09, Beispiel aus dem API-Design „Gastmodus“).
-// 10.000 Pfade sind die Obergrenze für Gäste; ohne Seed erzeugt das Backend einen und zeigt ihn an (NF-08).
 export const DEMO_PARAMETERS = Object.freeze({ startCapital: 5000, monthlyContribution: 100, horizonYears: 15, paths: 10000 });
 
 export const DEMO_MESSAGES = {
@@ -15,9 +11,6 @@ export const DEMO_MESSAGES = {
   unexpected: "Die Beispielsimulation konnte nicht berechnet werden.",
 };
 
-// ===== Logik: ohne Browser testbar =====
-
-// Feste Parameter als Text, z. B. „Startkapital 5.000 € · Sparrate 100 € pro Monat · 15 Jahre · 10.000 Pfade“
 export function describeDemoParameters(parameters = DEMO_PARAMETERS) {
   return [
     `Startkapital ${formatEuro(parameters.startCapital)}`,
@@ -27,14 +20,12 @@ export function describeDemoParameters(parameters = DEMO_PARAMETERS) {
   ].join(" · ");
 }
 
-// Zusammensetzung eines Beispielportfolios, z. B. „iShares MSCI World ETF (URTH) 70 % · …“
 export function describeDemoPortfolio(portfolio) {
   return (portfolio?.positions ?? [])
     .map((position) => `${position.name} (${position.symbol}) ${Number(position.weight).toLocaleString("de-DE")} %`)
     .join(" · ");
 }
 
-// Beispielportfolios laden. Ergebnis: { status: "loaded", portfolios } | { status: "error", message }
 export async function loadDemoPortfolios(load = fetchDemoPortfolios) {
   try {
     const response = await load();
@@ -44,8 +35,6 @@ export async function loadDemoPortfolios(load = fetchDemoPortfolios) {
   }
 }
 
-// Beispielsimulation mit den festen Parametern starten.
-// Ergebnis: { status: "done", result } | { status: "error", message }
 export async function startDemoSimulation(portfolioId, run = runDemoSimulation) {
   const text = String(portfolioId ?? "").trim();
   const id = Number(text);
@@ -59,8 +48,6 @@ export async function startDemoSimulation(portfolioId, run = runDemoSimulation) 
     return { status: "error", message: apiErrorText(error) ?? DEMO_MESSAGES.unexpected };
   }
 }
-
-// ===== Anzeige: verbindet die Logik mit der Startseite =====
 
 export function initDemoPage(root = document) {
   const section = root.getElementById("demo-simulation");

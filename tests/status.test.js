@@ -1,10 +1,7 @@
-// KI-Log ME-[Nr.]: Tests zur Statuszeile mit KI erstellt, von Mert Eminel geprüft (FE #55, H3)
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { showStatus } from "../src/js/simulation.js";
 
-// Kleine Attrappe eines Elements mit textContent und classList
 function fakeElement() {
   const classes = new Set(["summary-status"]);
   return {

@@ -1,5 +1,3 @@
-// KI-Log ME-40: Speichern und Aufrufen von Simulationen mit KI erstellt, von Mert Eminel geprüft (FE #17, US-08)
-
 import {
   apiErrorText,
   deleteSavedSimulation,
@@ -10,10 +8,8 @@ import {
 import { isUnauthorized } from "./auth.js";
 import { formatEuro } from "./chart.js";
 
-// Name wie beim Portfolio höchstens 100 Zeichen (API-Design, E32)
 export const MAX_NAME_LENGTH = 100;
 
-// Texte wie im Backend bzw. in den Kurzformat-Tabellen Sprint 3 (US-08)
 export const MESSAGES = {
   nameInvalid: "Bitte einen Namen mit höchstens 100 Zeichen eingeben.",
   saving: "Simulation wird gespeichert …",
@@ -31,10 +27,6 @@ export function confirmDeleteMessage(name) {
   return `Gespeicherte Simulation „${name}“ wirklich löschen?`;
 }
 
-// ===== Logik: ohne Browser testbar =====
-
-// Prüft den Namen wie das Backend: getrimmt, nicht leer, höchstens 100 Zeichen.
-// Ergebnis: { valid, name, error }
 export function validateSimulationName(input) {
   const name = String(input ?? "").trim();
   if (name === "" || name.length > MAX_NAME_LENGTH) {
@@ -43,8 +35,6 @@ export function validateSimulationName(input) {
   return { valid: true, name, error: "" };
 }
 
-// Parameter der angezeigten Simulation für das Speichern, einschließlich ihres Seeds (E32, NF-08).
-// targetAmount wird nur mitgeschickt, wenn er gesetzt ist.
 export function buildSaveParameters(result) {
   const { startCapital, monthlyContribution, horizonYears, paths, seed, targetAmount } = result.parameters;
   const parameters = { startCapital, monthlyContribution, horizonYears, paths, seed };
@@ -54,12 +44,10 @@ export function buildSaveParameters(result) {
   return parameters;
 }
 
-// Meldung vom Backend samt Details; sonst allgemeiner Text
 export function errorMessageFrom(error) {
   return apiErrorText(error) ?? MESSAGES.unexpected;
 }
 
-// Gemeinsame Fehlerbehandlung: 401 führt zur Anmeldung, alles andere wird als Meldung angezeigt
 async function call(token, action) {
   if (!token) {
     return { status: "unauthorized" };
@@ -74,8 +62,6 @@ async function call(token, action) {
   }
 }
 
-// Angezeigte Simulation unter einem Namen speichern.
-// Ergebnis: { status: "saved", simulation } | { status: "invalid", error } | { status: "unauthorized" } | { status: "error", message }
 export async function saveCurrentSimulation(result, nameInput, token, save = saveSimulation) {
   const check = validateSimulationName(nameInput);
   if (!check.valid) {
@@ -87,7 +73,6 @@ export async function saveCurrentSimulation(result, nameInput, token, save = sav
   });
 }
 
-// Ergebnis: { status: "loaded", simulations } | { status: "unauthorized" } | { status: "error", message }
 export async function loadSavedSimulations(token, list = listSavedSimulations) {
   return call(token, async () => {
     const data = await list(token);
@@ -95,7 +80,6 @@ export async function loadSavedSimulations(token, list = listSavedSimulations) {
   });
 }
 
-// Ergebnis: { status: "opened", simulation } | { status: "unauthorized" } | { status: "error", message }
 export async function openSavedSimulation(simulationId, token, details = fetchSavedSimulation) {
   return call(token, async () => {
     const simulation = await details(token, simulationId);
@@ -103,7 +87,6 @@ export async function openSavedSimulation(simulationId, token, details = fetchSa
   });
 }
 
-// Ergebnis: { status: "deleted" } | { status: "unauthorized" } | { status: "error", message }
 export async function removeSavedSimulation(simulationId, token, remove = deleteSavedSimulation) {
   return call(token, async () => {
     await remove(token, simulationId);
@@ -111,7 +94,6 @@ export async function removeSavedSimulation(simulationId, token, remove = delete
   });
 }
 
-// Datum und Uhrzeit des Speicherns, z. B. "18.10.2026, 16:20"
 export function formatSavedAt(isoTimestamp) {
   const time = Date.parse(isoTimestamp);
   if (Number.isNaN(time)) {
@@ -120,14 +102,12 @@ export function formatSavedAt(isoTimestamp) {
   return new Date(time).toLocaleString("de-DE", { dateStyle: "medium", timeStyle: "short" });
 }
 
-// Zweite Zeile eines Listeneintrags: Portfolio und Speicherzeitpunkt (Akzeptanzkriterium US-08)
 export function formatSavedSimulationDetails(entry, portfolioNames = new Map()) {
   const portfolio = portfolioNames.get(entry?.portfolioId) ?? `Portfolio ${entry?.portfolioId}`;
   const savedAt = formatSavedAt(entry?.createdAt);
   return savedAt ? `${portfolio} · gespeichert am ${savedAt}` : portfolio;
 }
 
-// Hinweis über dem Ergebnis einer geöffneten Simulation: Name, Speicherzeitpunkt und Parameter
 export function describeOpenedSimulation(simulation) {
   const { startCapital, monthlyContribution, horizonYears } = simulation.parameters;
   const savedAt = formatSavedAt(simulation.createdAt);
@@ -138,10 +118,6 @@ export function describeOpenedSimulation(simulation) {
     + `Anlagehorizont ${horizonYears} ${horizonYears === 1 ? "Jahr" : "Jahre"}. Ergebnis ohne Neuberechnung.`;
 }
 
-// ===== Anzeige: verbindet die Logik mit der Seite =====
-
-// deps: { getToken, onUnauthorized, onOpen(simulation), confirm(text) }
-// Rückgabe: { offerSave(result), showOpened(simulation), setPortfolioNames(map), refresh() }
 export function initSavedSimulations(root, deps) {
   const saveForm = root.getElementById("simulation-save-form");
   const nameInput = root.getElementById("simulation-save-name");
@@ -165,7 +141,6 @@ export function initSavedSimulations(root, deps) {
     nameInput.setAttribute("aria-invalid", text ? "true" : "false");
   }
 
-  // Nach einer neu berechneten Simulation: Speichern anbieten
   function offerSave(result) {
     currentResult = result;
     openedInfo.hidden = true;
@@ -175,7 +150,6 @@ export function initSavedSimulations(root, deps) {
     setText(saveStatus, "");
   }
 
-  // Nach dem Öffnen einer gespeicherten Simulation: Hinweis statt Speichern
   function showOpened(simulation) {
     currentResult = null;
     saveForm.hidden = true;
@@ -248,7 +222,6 @@ export function initSavedSimulations(root, deps) {
   }
 
   async function remove(entry) {
-    // Bestätigung vor dem Löschen, wie beim Portfolio (US-06, US-08)
     if (!deps.confirm(confirmDeleteMessage(entry.name))) {
       return;
     }
@@ -261,7 +234,6 @@ export function initSavedSimulations(root, deps) {
       setText(listHint, outcome.message, true);
       return;
     }
-    // Bei leerer Liste bleibt der Hinweis „Noch keine Simulation gespeichert.“ stehen
     if (await refresh() && listElement.children.length > 0) {
       setText(listHint, MESSAGES.deleted);
     }

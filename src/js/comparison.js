@@ -27,7 +27,6 @@ export function validateComparisonParameters(input) {
   if (!Number.isInteger(horizonYears) || horizonYears < 1 || horizonYears > 40) errors.horizonYears = "Der Anlagehorizont muss eine ganze Zahl von 1 bis 40 Jahren sein.";
   if (!Number.isInteger(paths) || paths < 1000 || paths > 50000) errors.paths = "Die Anzahl der Simulationspfade muss zwischen 1.000 und 50.000 liegen.";
   if (seed !== null && !Number.isSafeInteger(seed)) errors.seed = "Der Seed muss eine ganze Zahl sein.";
-  // Optionaler Zielbetrag wie bei der Simulation (FE #30, B1, E27)
   const target = parseTargetAmount(input.targetAmount);
   if (target.error) errors.targetAmount = target.error;
   const parameters = { startCapital, monthlyContribution, horizonYears, paths };
@@ -36,7 +35,6 @@ export function validateComparisonParameters(input) {
   return { valid: Object.keys(errors).length === 0, errors, parameters };
 }
 
-// Bei 422 INSUFFICIENT_DATA wird jede Anlage genau einmal genannt (B7, FE #34)
 function displayError(error) {
   return apiErrorText(error) ?? "Der Vergleich konnte nicht berechnet werden.";
 }
@@ -159,7 +157,6 @@ export function initComparisonPage(root = document) {
       chart.className = "fan-chart-container";
       renderFanChart(chart, result.timeline, yScale);
       const metrics = result.metrics ?? {};
-      // Zielwahrscheinlichkeit nur mit Zielbetrag (FE #30, B1, E27)
       const targetRow = targetProbabilityRow(metrics, data.parameters?.targetAmount);
       const summary = root.createElement("dl");
       summary.className = "simulation-summary";
@@ -202,8 +199,6 @@ export function initComparisonPage(root = document) {
     event.preventDefault();
     showErrors();
     const selection = selections();
-    // H2 (FE #54): Nach einem Fehler das Ergebnis des vorherigen Vergleichs ausblenden
-    // H3 (FE #55): Fehlermeldungen rot wie auf der Simulationsseite
     if (selection.error) { hideResult("invalid"); showStatus(status, selection.error, true); return; }
     const input = Object.fromEntries(fields.map((field) => [field, form.elements[field].value]));
     const validated = validateComparisonParameters(input);
