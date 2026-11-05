@@ -1,5 +1,3 @@
-// KI-Log ME-40: Tests zum Speichern und Aufrufen von Simulationen mit KI erstellt, von Mert Eminel geprüft (FE #17, US-08)
-
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -28,7 +26,6 @@ afterEach(() => {
   mock.restoreAll();
 });
 
-// Antwort von POST /simulations ohne save, wie sie auf der Seite angezeigt wird
 const result = {
   id: null,
   name: null,
@@ -37,8 +34,6 @@ const result = {
   timeline: [{ month: 0, p5: 10000, p50: 10000, p95: 10000 }],
   runtimeMs: 85,
 };
-
-// ===== API (Format laut API-Design) =====
 
 test("saveSimulation posts parameters with save true and name", async () => {
   const fetchMock = mock.method(globalThis, "fetch", async () => new Response("{}", { status: 201 }));
@@ -95,8 +90,6 @@ test("deleteSavedSimulation sends DELETE with the token header and accepts 204",
   assert.equal(data, null);
 });
 
-// ===== Name (E32: Pflicht, höchstens 100 Zeichen) =====
-
 test("validateSimulationName rejects empty and whitespace-only names", () => {
   assert.deepEqual(validateSimulationName(""), { valid: false, name: "", error: MESSAGES.nameInvalid });
   assert.equal(validateSimulationName("   ").valid, false);
@@ -114,8 +107,6 @@ test("validateSimulationName trims the name before checking the length", () => {
   assert.equal(check.name.length, 100);
 });
 
-// ===== Parameter für das Speichern =====
-
 test("buildSaveParameters keeps the seed of the shown simulation and omits a missing target amount", () => {
   assert.deepEqual(buildSaveParameters(result), {
     startCapital: 10000,
@@ -130,8 +121,6 @@ test("buildSaveParameters includes a target amount when it is set", () => {
   const withTarget = { ...result, parameters: { ...result.parameters, targetAmount: 100000 } };
   assert.equal(buildSaveParameters(withTarget).targetAmount, 100000);
 });
-
-// ===== Ablauf =====
 
 test("saveCurrentSimulation does not call the backend for an invalid name", async () => {
   const save = mock.fn();
@@ -214,8 +203,6 @@ test("removeSavedSimulation reports deleted after 204", async () => {
   assert.deepEqual(await removeSavedSimulation(9, "abc", remove), { status: "deleted" });
   assert.deepEqual(remove.mock.calls[0].arguments, ["abc", 9]);
 });
-
-// ===== Anzeige-Texte =====
 
 test("formatSavedSimulationDetails shows portfolio name and save time", () => {
   const entry = { id: 9, name: "Sparplan", portfolioId: 4, createdAt: "2026-10-18T14:20:00Z" };

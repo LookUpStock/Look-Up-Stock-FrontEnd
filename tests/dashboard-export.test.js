@@ -1,5 +1,3 @@
-// KI-Log ME-[Nr.]: Tests zum CSV-Export mit KI erstellt, von Mert Eminel geprüft (FE #52, US-12)
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { API_BASE_URL } from "../src/js/api.js";
@@ -43,7 +41,7 @@ test("the export returns the file and the file name from Content-Disposition (E4
   const { blob, filename } = await fetchUsageExport("abc", "2026-11", async () => csvResponse());
 
   assert.equal(filename, "lookupstock-nutzung-2026-11.csv");
-  assert.equal(await blob.text(), CSV.slice(1)); // Blob.text() entfernt das BOM beim Dekodieren
+  assert.equal(await blob.text(), CSV.slice(1)); // Blob.text() strips the BOM when decoding.
   assert.equal(blob.size, new TextEncoder().encode(CSV).length);
 });
 

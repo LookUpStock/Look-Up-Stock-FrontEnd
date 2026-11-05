@@ -5,16 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LookUpStock – Simulation</title>
 
-  <!-- Gemeinsame Styles aller Seiten -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Einstiegspunkt; api.js und chart.js werden von main.js importiert -->
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
-  <!-- Startseite öffentlich (FE #38, US-09): Gäste sehen die Beispielsimulation; die eigene Simulation,
-       gespeicherte Simulationen und das Speichern bleiben nur mit Anmeldung nutzbar (US-04, US-08; geprüft in main.js) -->
-  <!-- KI-Log Nr. 23: HTML-Grundgerüst mit KI erstellt, vom Team geprüft und angepasst -->
 
   <header class="site-header">
     <a href="index.html" class="logo">LookUpStock</a>
@@ -23,20 +18,16 @@
       <a href="portfolio.html" class="nav-link">Portfolios</a>
       <a href="compare.html" class="nav-link">Vergleich</a>
       <a href="app.html#/portfolios" class="nav-link">App (SPA)</a>
-      <!-- Anmeldestatus mit Abmelden (FE #4, US-01) -->
       <div id="auth-status" class="auth-status"></div>
     </nav>
   </header>
 
   <main class="page-content">
-    <!-- Verbindungsstatus zum Backend (FE #6, Prüfung über GET /api/v1/ping) -->
     <section class="status-bar">
       <span>Backend:</span>
       <span id="backend-status">wird geprüft …</span>
     </section>
 
-    <!-- Beispielsimulation für Gäste ohne Anmeldung (FE #38, US-09, GET /demo/portfolios, POST /demo/simulations).
-         Sichtbar nur ohne gültige Anmeldung; feste Parameter laut API-Design, nichts wird gespeichert. -->
     <section id="demo-simulation" class="card" hidden>
       <h2>Beispielsimulation ausprobieren</h2>
       <p class="search-hint">Ohne Konto: Wähle ein Beispielportfolio und sieh dir an, wie sich eine Geldanlage unter Unsicherheit entwickeln kann.</p>
@@ -64,7 +55,6 @@
       </div>
     </section>
 
-    <!-- Eingabemaske der Simulation (FE #3, US-04, POST /api/v1/simulations) -->
     <section id="simulation-input" class="card">
       <h2>Simulation starten</h2>
 
@@ -104,7 +94,6 @@
             <input id="simulation-seed" name="seed" type="text" inputmode="numeric" autocomplete="off" placeholder="zufällig">
             <p id="simulation-seed-error" class="field-error" aria-live="polite"></p>
           </div>
-          <!-- Optionaler Zielbetrag (FE #30, B1, US-05, E27) -->
           <div class="field-group">
             <label for="simulation-target">Zielbetrag in € (optional)</label>
             <input id="simulation-target" name="targetAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="z. B. 100000">
@@ -119,7 +108,6 @@
       </form>
     </section>
 
-    <!-- Fächerdiagramm mit p5, p50 und p95 (FE #3, US-04); sichtbar nach der ersten Simulation -->
     <section id="simulation-result" class="card" hidden>
       <h2>Mögliche Wertverläufe</h2>
       <div id="simulation-chart" class="fan-chart-container"></div>
@@ -128,10 +116,8 @@
       <p class="search-hint">Wechselkursschwankungen werden nicht berücksichtigt.</p>
       <p class="search-hint">Die Werte sind nominal und berücksichtigen keine Kosten, Steuern und Inflation. Keine Anlageberatung.</p>
 
-      <!-- Hinweis bei einer geöffneten gespeicherten Simulation (FE #17, US-08) -->
       <p id="simulation-opened-info" class="simulation-opened-info" hidden></p>
 
-      <!-- Simulation unter einem Namen speichern (FE #17, US-08, E32) -->
       <form id="simulation-save-form" class="simulation-save-form" novalidate hidden>
         <div class="field-group">
           <label for="simulation-save-name">Name der Simulation</label>
@@ -145,14 +131,12 @@
       </form>
     </section>
 
-    <!-- Liste der gespeicherten Simulationen, neueste zuerst (FE #17, US-08) -->
     <section id="saved-simulations" class="card">
       <h2>Gespeicherte Simulationen</h2>
       <p id="saved-simulations-hint" class="search-hint" aria-live="polite"></p>
       <ul id="saved-simulations-list" class="saved-portfolios-list"></ul>
     </section>
 
-    <!-- Bereich für Fehlermeldungen aus der API (error.message) -->
     <div id="error-message" class="error-message" hidden></div>
   </main>
 

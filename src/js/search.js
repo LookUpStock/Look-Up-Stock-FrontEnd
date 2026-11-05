@@ -1,14 +1,10 @@
-// KI-Log Nr. 19: Anlagensuche mit KI erstellt, von Mert Eminel geprüft (FE #1, US-02)
-
 import { searchAssets, ApiError } from "./api.js";
 
-// Akzeptanzkriterium US-02: Suche erst ab zwei Zeichen
 export const MIN_QUERY_LENGTH = 2;
 
-// Wartezeit nach dem letzten Tastendruck, damit nicht jeder Buchstabe eine Anfrage auslöst
+// Debounce so not every keystroke sends a request.
 export const SEARCH_DELAY_MS = 300;
 
-// Texte laut Akzeptanzkriterien und API-Design (E10)
 export const MESSAGES = {
   tooShort: "Bitte mindestens 2 Zeichen eingeben.",
   noResults: "Keine passende Anlage gefunden.",
@@ -16,15 +12,10 @@ export const MESSAGES = {
   unexpected: "Ein unerwarteter Fehler ist aufgetreten.",
 };
 
-// Leerzeichen am Anfang und Ende entfernen
 export function normalizeQuery(input) {
   return (input ?? "").trim();
 }
 
-// ===== Logik: ohne Browser testbar =====
-
-// Führt eine Suche aus und liefert einen Zustand, den die Anzeige nur noch darstellt:
-// "too-short" | "results" | "empty" | "error"
 export async function findAssets(input, search = searchAssets) {
   const query = normalizeQuery(input);
 
@@ -37,14 +28,11 @@ export async function findAssets(input, search = searchAssets) {
     const results = data?.results ?? [];
     return { status: results.length > 0 ? "results" : "empty", query, results };
   } catch (error) {
-    // Meldung kommt bei ApiError bereits auf Deutsch vom Backend (z. B. bei 503)
     const message = error instanceof ApiError ? error.message : MESSAGES.unexpected;
     return { status: "error", query, results: [], message };
   }
 }
 
-// Hinweis unter dem Suchfeld passend zum Zustand der Suche (B6):
-// Fehlermeldungen stehen direkt am Suchfeld und nicht nur am Seitenende
 export function searchHint(state) {
   switch (state.status) {
     case "too-short":
@@ -58,16 +46,10 @@ export function searchHint(state) {
   }
 }
 
-// Zweite Zeile eines Treffers: Ticker, Börse und Währung (Akzeptanzkriterium US-02)
 export function formatAssetDetails(asset) {
   return [asset.symbol, asset.exchange, asset.currency].filter(Boolean).join(" · ");
 }
 
-// ===== Anzeige: verbindet die Logik mit der Seite =====
-
-// Startet die Anlagensuche im übergebenen Bereich (portfolio.html, #asset-search).
-// Bei Auswahl eines Treffers wird das Ereignis "asset-selected" mit der Anlage
-// in event.detail ausgelöst; der Portfolio-Editor (FE #2) kann darauf reagieren.
 export function initAssetSearch(container) {
   const input = container.querySelector("#asset-search-input");
   const hint = container.querySelector("#asset-search-hint");
@@ -107,7 +89,7 @@ export function initAssetSearch(container) {
       button.type = "button";
       button.className = "search-result";
 
-      // textContent statt innerHTML: Namen aus der API werden nie als HTML ausgeführt
+      // textContent, not innerHTML: names from the API are never interpreted as HTML.
       const name = document.createElement("span");
       name.className = "search-result-name";
       name.textContent = asset.name;
@@ -140,14 +122,13 @@ export function initAssetSearch(container) {
 
     const state = await findAssets(input.value);
 
-    // Nur die Antwort auf die neueste Eingabe anzeigen, ältere Antworten verwerfen
+    // Only render the response to the latest input; older responses are discarded.
     if (searchId !== latestSearch) {
       return;
     }
 
     if (state.status === "error") {
       list.replaceChildren();
-      // Meldung am Suchfeld anzeigen, damit der Fehler im Blickfeld bleibt (B6)
       showHint(searchHint(state));
       showError(state.message);
       return;

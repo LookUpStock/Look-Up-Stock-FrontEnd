@@ -36,7 +36,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* US-12 (FE #52): Hinweis links, Button rechts wie im Wireframe; bei 360 px untereinander */
 .dashboard-export {
   display: flex;
   flex-wrap: wrap;

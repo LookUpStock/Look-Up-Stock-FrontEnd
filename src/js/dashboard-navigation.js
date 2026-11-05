@@ -1,6 +1,5 @@
 import { hasManagementRole } from "./auth.js";
 
-// Fügt den Dashboard-Einstieg nur für angemeldete Nutzer mit MANAGER-Rolle ein.
 export function addDashboardNavigationLink(root, session, currentPage) {
   if (session?.status !== "valid" || !hasManagementRole(session)) {
     return null;

@@ -3,12 +3,10 @@ import assert from "node:assert/strict";
 import { searchAssets, ApiError, API_BASE_URL } from "../src/js/api.js";
 import { findAssets, formatAssetDetails, normalizeQuery, searchHint, MESSAGES } from "../src/js/search.js";
 
-// Nach jedem Test das echte fetch wiederherstellen
 afterEach(() => {
   mock.restoreAll();
 });
 
-// Beispieltreffer wie im API-Design
 const EUNL = {
   id: 17,
   symbol: "EUNL",
@@ -18,8 +16,6 @@ const EUNL = {
   currency: "EUR",
   type: "ETF",
 };
-
-// ===== api.js: searchAssets =====
 
 test("searchAssets calls the search endpoint with encoded query", async () => {
   const fetchMock = mock.method(globalThis, "fetch", async () =>
@@ -40,8 +36,6 @@ test("searchAssets adds limit only when given", async () => {
 
   assert.equal(fetchMock.mock.calls[0].arguments[0], `${API_BASE_URL}/api/v1/assets/search?q=EUNL&limit=25`);
 });
-
-// ===== search.js: Akzeptanzkriterien US-02 =====
 
 test("search does not start with fewer than two characters", async () => {
   const search = mock.fn(async () => ({ results: [EUNL] }));
@@ -119,8 +113,6 @@ test("normalizeQuery handles empty input", () => {
   assert.equal(normalizeQuery(undefined), "");
   assert.equal(normalizeQuery("  EUNL "), "EUNL");
 });
-
-// ===== search.js: Hinweis unter dem Suchfeld (B6) =====
 
 test("search hint shows the error message next to the search field (B6)", async () => {
   const serverError = async () => {

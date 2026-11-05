@@ -1,5 +1,3 @@
-// KI-Log ME-[Nr.]: Tests der Beispielsimulation mit KI erstellt, von Mert Eminel geprüft (FE #38, US-09)
-
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { ApiError, API_BASE_URL, fetchDemoPortfolios, runDemoSimulation } from "../src/js/api.js";

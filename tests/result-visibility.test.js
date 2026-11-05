@@ -1,5 +1,3 @@
-// KI-Log ME-[Nr.]: Tests zum Ausblenden des alten Ergebnisses mit KI erstellt, von Mert Eminel geprüft (FE #54, H2)
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ApiError } from "../src/js/api.js";
