@@ -1,12 +1,9 @@
-# Node-Abhängigkeiten und Testberichte
 node_modules/
 coverage/
 
-# Lokale Umgebungsvariablen (nur .env.example wird committet)
 .env
 .env.*
 !.env.example
 
-# Betriebssystem-Dateien
 .DS_Store
 Thumbs.db

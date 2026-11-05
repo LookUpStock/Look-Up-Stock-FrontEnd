@@ -1,22 +1,8 @@
-// KI-Log Nr. [eintragen]: Fächerdiagramm mit KI erstellt, vom Team zu prüfen (FE #3, US-04)
-
-// Fächerdiagramm der Simulation als SVG, ohne externe Bibliothek.
-//
-// Erwartete Eingabe ist das Feld "timeline" aus der Antwort der Simulation:
-//   [
-//     { "month": 0,   "p5": 10000,   "p50": 10000,     "p95": 10000 },
-//     { "month": 240, "p5": 61200.1, "p50": 112340.55, "p95": 205880.9 }
-//   ]
-// Ein Punkt pro Monat (0 bis horizonYears × 12).
-// p5, p50, p95 = pessimistischer, mittlerer und optimistischer Verlauf.
-
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-// Größe der Zeichenfläche; das SVG skaliert über viewBox auf die Breite der Karte
 export const CHART_SIZE = { width: 720, height: 360, top: 16, right: 16, bottom: 40, left: 96 };
 
-// Geschätzte Breite der Y-Beschriftung: Schriftgröße aus .fan-chart-label (style.css),
-// eine Ziffer ist etwa 0,6 × Schriftgröße breit; Abstand zur Achse wie in renderFanChart
+// Estimated y-label width: a digit is about 0.6 × the font size of .fan-chart-label.
 const LABEL_FONT_SIZE = 20;
 const LABEL_CHAR_WIDTH_RATIO = 0.6;
 const LABEL_GAP = 8;
@@ -31,9 +17,6 @@ export function formatEuro(value) {
   return euroFormat.format(value);
 }
 
-// ===== Logik: ohne Browser testbar =====
-
-// Runde Schrittweite für die Achse (1, 2, 5, 10 × Zehnerpotenz)
 export function niceStep(rawStep) {
   if (!(rawStep > 0)) {
     return 1;
@@ -44,7 +27,6 @@ export function niceStep(rawStep) {
   return nice * power;
 }
 
-// Gemeinsame Y-Skala aus den p95-Werten mehrerer Diagramme berechnen.
 export function buildFanChartYScale(timelines) {
   const maxValue = Math.max(0, ...timelines.flatMap((timeline) =>
     (timeline ?? []).map((point) => point.p95)));
@@ -53,7 +35,6 @@ export function buildFanChartYScale(timelines) {
   return { yMax, yStep };
 }
 
-// Abstand der Jahresbeschriftung, damit höchstens MAX_X_TICKS Beschriftungen entstehen
 export function yearStep(horizonYears) {
   return [1, 2, 5, 10].find((step) => horizonYears / step <= MAX_X_TICKS) ?? 10;
 }
@@ -62,21 +43,17 @@ function toPath(points) {
   return points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
 }
 
-// Linker Rand, damit die längste Y-Beschriftung vollständig sichtbar ist (FE #68).
-// size.left bleibt die Untergrenze.
 export function leftMarginForLabels(labels, minLeft = CHART_SIZE.left) {
   const longest = Math.max(0, ...labels.map((label) => label.length));
   const labelWidth = Math.ceil(longest * LABEL_FONT_SIZE * LABEL_CHAR_WIDTH_RATIO);
   return Math.max(minLeft, labelWidth + LABEL_GAP + LABEL_PADDING);
 }
 
-// Berechnet Linien, Fläche und Achsen in Koordinaten der Zeichenfläche
 export function buildFanChartGeometry(timeline, size = CHART_SIZE, yScale = null) {
   const lastMonth = Math.max(1, timeline[timeline.length - 1]?.month ?? 0);
 
   const { yMax, yStep } = yScale ?? buildFanChartYScale([timeline]);
 
-  // Beschriftungen zuerst erzeugen, weil ihre Länge den linken Rand bestimmt
   const yValues = [];
   for (let value = 0; value <= yMax + yStep / 2; value += yStep) {
     yValues.push(value);
@@ -102,7 +79,6 @@ export function buildFanChartGeometry(timeline, size = CHART_SIZE, yScale = null
   }
 
   return {
-    // Fläche von p5 bis p95: oben nach rechts, unten zurück nach links
     band: `${toPath(upper)} ${toPath(lower.reverse()).replace(/^M/, "L")} Z`,
     p5: toPath(timeline.map((point) => [x(point.month), y(point.p5)])),
     p50: toPath(timeline.map((point) => [x(point.month), y(point.p50)])),
@@ -113,7 +89,6 @@ export function buildFanChartGeometry(timeline, size = CHART_SIZE, yScale = null
   };
 }
 
-// Kurzbeschreibung für Screenreader
 export function describeFanChart(timeline) {
   const last = timeline[timeline.length - 1];
   if (!last) {
@@ -121,8 +96,6 @@ export function describeFanChart(timeline) {
   }
   return `Nach ${last.month / 12} Jahren: ungünstig ${formatEuro(last.p5)}, mittel ${formatEuro(last.p50)}, günstig ${formatEuro(last.p95)}.`;
 }
-
-// ===== Anzeige =====
 
 function svgElement(name, attributes = {}) {
   const element = document.createElementNS(SVG_NS, name);
@@ -138,7 +111,6 @@ function svgText(text, attributes) {
   return element;
 }
 
-// Zeichnet das Fächerdiagramm in den übergebenen Container
 export function renderFanChart(container, timeline, yScale = null) {
   container.replaceChildren();
   if (!timeline?.length) {

@@ -37,7 +37,6 @@ function formatWeightPct(value) {
 function clonePosition(position) {
   return {
     id: position.id,
-    // Datenbank-id der Anlage aus der Suche; das Backend speichert nur damit (US-03)
     assetId: position.assetId ?? null,
     symbol: toTrimmedString(position.symbol),
     name: toTrimmedString(position.name),

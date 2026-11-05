@@ -1,21 +1,14 @@
-// KI-Log Nr. [eintragen]: Login- und Registrierungsmaske mit KI erstellt, von Mert Eminel geprüft (FE #4, US-01)
-
 import { registerUser, loginUser, logoutUser, ApiError } from "./api.js";
 
-// Regeln laut API-Design und Kurzformat-Tabellen Sprint 2 (US-01)
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_EMAIL_LENGTH = 255;
-// Gleiches Muster wie im Backend (AuthService, BE #30), damit Frontend und Backend gleich entscheiden
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Schlüssel, unter dem die Anmeldung im Browser gespeichert wird
 export const SESSION_KEY = "lookupstock.session";
 
-// Seiten, auf die nach dem Login zurückgeleitet werden darf (keine fremden Adressen)
 const ALLOWED_NEXT_PAGES = ["index.html", "portfolio.html", "dashboard.html"];
 export const DEFAULT_NEXT_PAGE = "portfolio.html";
 
-// Texte laut API-Design und PO-Entscheidungen E12 bis E14
 export const MESSAGES = {
   invalidEmail: "Bitte gib eine gültige E-Mail-Adresse ein.",
   passwordTooShort: "Das Passwort muss mindestens 8 Zeichen haben.",
@@ -27,21 +20,16 @@ export const MESSAGES = {
   unexpected: "Ein unerwarteter Fehler ist aufgetreten.",
 };
 
-// Grund für die Weiterleitung zur Anmeldung (Parameter "grund" in login.html)
 export const REASONS = {
   expired: "abgelaufen",
   notLoggedIn: "anmelden",
   loggedOut: "abgemeldet",
 };
 
-// ===== Logik: ohne Browser testbar =====
-
-// Leerzeichen entfernen und klein schreiben (E11: Groß- und Kleinschreibung spielen keine Rolle)
 export function normalizeEmail(input) {
   return (input ?? "").trim().toLowerCase();
 }
 
-// E12: gültiges E-Mail-Format; liefert die Fehlermeldung oder null
 export function validateEmail(email) {
   const value = normalizeEmail(email);
   if (value.length === 0 || value.length > MAX_EMAIL_LENGTH || !EMAIL_PATTERN.test(value)) {
@@ -50,7 +38,6 @@ export function validateEmail(email) {
   return null;
 }
 
-// Passwort mit mindestens 8 Zeichen; die Obergrenze von 72 Byte prüft das Backend
 export function validatePassword(password) {
   if ((password ?? "").length < MIN_PASSWORD_LENGTH) {
     return MESSAGES.passwordTooShort;
@@ -58,13 +45,11 @@ export function validatePassword(password) {
   return null;
 }
 
-// Prüft beide Felder der Registrierung vor dem Absenden
 export function validateRegistration(email, password) {
   const errors = { email: validateEmail(email), password: validatePassword(password) };
   return { valid: !errors.email && !errors.password, errors };
 }
 
-// Beim Login nur prüfen, ob beide Felder ausgefüllt sind; alles andere entscheidet das Backend
 export function validateLogin(email, password) {
   if (normalizeEmail(email).length === 0 || (password ?? "").length === 0) {
     return MESSAGES.missingCredentials;
@@ -72,7 +57,6 @@ export function validateLogin(email, password) {
   return null;
 }
 
-// Speicher im Browser; in Tests wird ein eigener Speicher übergeben
 function browserStorage() {
   try {
     return globalThis.localStorage ?? null;
@@ -81,7 +65,6 @@ function browserStorage() {
   }
 }
 
-// Anmeldung nach dem Login speichern
 export function saveSession(loginResponse, email, storage = browserStorage()) {
   const session = { token: loginResponse.token, expiresAt: loginResponse.expiresAt, email };
   if (loginResponse.role !== undefined) session.role = loginResponse.role;
@@ -89,7 +72,6 @@ export function saveSession(loginResponse, email, storage = browserStorage()) {
   return session;
 }
 
-// Die Auswertungen sind nur für die vom Backend gelieferte Rolle MANAGER sichtbar (E40).
 export function hasManagementRole(session) {
   return session?.role === "MANAGER";
 }
@@ -98,9 +80,6 @@ export function clearSession(storage = browserStorage()) {
   storage?.removeItem(SESSION_KEY);
 }
 
-// Liest die gespeicherte Anmeldung und prüft den Ablauf über expiresAt (E14, NF-16).
-// Ergebnis: { status: "none" } | { status: "expired" } | { status: "valid", token, expiresAt, email }
-// Eine abgelaufene Anmeldung wird dabei gelöscht.
 export function readSession(storage = browserStorage(), now = Date.now()) {
   const raw = storage?.getItem(SESSION_KEY);
   if (!raw) {
@@ -121,7 +100,7 @@ export function readSession(storage = browserStorage(), now = Date.now()) {
     return { status: "none" };
   }
 
-  // Genau auf dem Ablaufzeitpunkt gilt die Anmeldung als abgelaufen (wie im Backend)
+  // Exactly at expiresAt the session counts as expired, as in the backend.
   if (now >= expiresAt) {
     clearSession(storage);
     return { status: "expired" };
@@ -130,18 +109,16 @@ export function readSession(storage = browserStorage(), now = Date.now()) {
   return { status: "valid", ...session };
 }
 
-// Token für geschützte Anfragen (z. B. Portfolio speichern); null, wenn nicht angemeldet
 export function getToken(storage = browserStorage(), now = Date.now()) {
   const session = readSession(storage, now);
   return session.status === "valid" ? session.token : null;
 }
 
-// true, wenn das Backend die Anmeldung abgelehnt hat (401); andere Module leiten dann zur Anmeldung
 export function isUnauthorized(error) {
   return error instanceof ApiError && error.status === 401;
 }
 
-// Nur bekannte Seiten als Rücksprungziel zulassen
+// Only known pages are allowed as redirect targets (no open redirect).
 export function safeNextPage(page) {
   return ALLOWED_NEXT_PAGES.includes(page) ? page : DEFAULT_NEXT_PAGE;
 }
@@ -158,7 +135,6 @@ export function loginPageUrl(reason, nextPage) {
   return query ? `login.html?${query}` : "login.html";
 }
 
-// Für geschützte Seiten: null, wenn angemeldet; sonst die Adresse der Anmeldeseite mit Grund
 export function loginRedirectFor(session, currentPage) {
   if (session.status === "valid") {
     return null;
@@ -167,7 +143,6 @@ export function loginRedirectFor(session, currentPage) {
   return loginPageUrl(reason, currentPage);
 }
 
-// Hinweistext zum Grund der Weiterleitung
 export function reasonMessage(reason) {
   switch (reason) {
     case REASONS.expired:
@@ -182,12 +157,9 @@ export function reasonMessage(reason) {
 }
 
 function messageFrom(error) {
-  // Bei ApiError kommt die Meldung bereits auf Deutsch vom Backend (z. B. 409, 401)
   return error instanceof ApiError ? error.message : MESSAGES.unexpected;
 }
 
-// Registrierung: erst im Browser prüfen, dann an das Backend senden.
-// Nach Erfolg ist der Nutzer noch nicht angemeldet (E13).
 export async function submitRegistration(email, password, register = registerUser) {
   const check = validateRegistration(email, password);
   if (!check.valid) {
@@ -203,7 +175,6 @@ export async function submitRegistration(email, password, register = registerUse
   }
 }
 
-// Anmeldung: bei Erfolg Token und Ablaufzeitpunkt speichern
 export async function submitLogin(email, password, { login = loginUser, storage = browserStorage() } = {}) {
   const missing = validateLogin(email, password);
   if (missing) {
@@ -220,8 +191,7 @@ export async function submitLogin(email, password, { login = loginUser, storage 
   }
 }
 
-// Abmelden: Token beim Backend sperren und lokal löschen.
-// Lokal wird auch gelöscht, wenn das Backend nicht erreichbar ist.
+// The local session is cleared even if the backend is unreachable.
 export async function submitLogout({ logout = logoutUser, storage = browserStorage() } = {}) {
   const raw = storage?.getItem(SESSION_KEY);
   let token = null;
@@ -241,15 +211,12 @@ export async function submitLogout({ logout = logoutUser, storage = browserStora
   }
 }
 
-// ===== Anzeige: verbindet die Logik mit der Seite =====
-
 function setText(element, text) {
   if (element) {
     element.textContent = text;
   }
 }
 
-// Kopfzeile: "Anmelden" oder "angemeldet als … · Abmelden"
 export function renderAuthStatus(container, session) {
   if (!container) {
     return;
@@ -285,7 +252,6 @@ export function renderAuthStatus(container, session) {
   container.append(link);
 }
 
-// Geschützte Seite (z. B. Simulation): ohne gültige Anmeldung zur Anmeldeseite weiterleiten
 export function requireLogin(session, currentPage) {
   const target = loginRedirectFor(session, currentPage);
   if (target) {
@@ -295,8 +261,6 @@ export function requireLogin(session, currentPage) {
   return true;
 }
 
-// Geschützter Bereich auf einer öffentlichen Seite (Portfolio-Editor):
-// ohne Anmeldung wird der Inhalt ausgeblendet und ein Hinweis mit Link angezeigt
 export function protectSection(section, session, currentPage) {
   const target = loginRedirectFor(session, currentPage);
   if (!section || !target) {
@@ -319,7 +283,6 @@ export function protectSection(section, session, currentPage) {
   section.append(hint);
 }
 
-// Anmeldeseite (login.html): beide Formulare und Hinweis zum Grund der Weiterleitung
 export function initLoginPage(root = document) {
   const params = new URLSearchParams(window.location.search);
   const nextPage = safeNextPage(params.get("weiter"));
@@ -331,7 +294,6 @@ export function initLoginPage(root = document) {
     notice.hidden = false;
   }
 
-  // Bereits angemeldet: direkt weiter
   if (readSession().status === "valid") {
     window.location.replace(nextPage);
     return;
@@ -355,7 +317,6 @@ export function initLoginPage(root = document) {
       window.location.assign(nextPage);
       return;
     }
-    // Gleiche Meldung bei falscher E-Mail und falschem Passwort (kommt vom Backend)
     setText(loginError, result.message);
     loginPassword.value = "";
   });
@@ -388,7 +349,6 @@ export function initLoginPage(root = document) {
       return;
     }
 
-    // E13: nicht automatisch anmelden, sondern E-Mail ins Anmeldeformular übernehmen
     registerForm.reset();
     if (notice) {
       notice.textContent = MESSAGES.registered;

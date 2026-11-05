@@ -33,7 +33,6 @@ export function formatTrackingDate(date) {
   return `${day}.${month}.${year}`;
 }
 
-// Backend liefert [{ key, label, value }]; hier wird die feste Reihenfolge fürs Dashboard hergestellt.
 export function normalizeUsageMetrics(metrics) {
   const byKey = Array.isArray(metrics)
     ? Object.fromEntries(metrics.map((metric) => [metric.key, metric]))

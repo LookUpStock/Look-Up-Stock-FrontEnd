@@ -1,5 +1,3 @@
-// SPA-Touchpoint mit Hash-Routing (Docs #160, FE #53).
-
 import {
   apiErrorText,
   fetchPortfolio,

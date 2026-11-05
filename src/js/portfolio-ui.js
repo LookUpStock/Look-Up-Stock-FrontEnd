@@ -37,7 +37,6 @@ function createDraftPosition(position = {}) {
   };
 }
 
-// Ergebnis von Normalisieren/Gleichgewichten zurück in Eingabefelder übernehmen
 function toDraftPositions(portfolio) {
   return portfolio.positions.map((position) => createDraftPosition({
     id: position.id,
@@ -73,11 +72,7 @@ function setFieldError(inputElement, errorElement, message) {
   inputElement.setAttribute("aria-invalid", message ? "true" : "false");
 }
 
-// KI-Log ME-[Nr.]: Anzeige der Feldmeldungen nach Absenden oder Verlassen mit KI erstellt, von Mert Eminel geprüft (FE #56, H4)
-// Festlegung des Product Owners (Sprint-Planning-Protokoll Sprint 5, Abschnitt 9): Meldungen an einem Feld
-// erscheinen erst, nachdem der Nutzer das Feld verlassen oder zum ersten Mal gespeichert hat. Die Prüfung
-// selbst (validatePortfolio) läuft immer; der Summenstatus erscheint ab der ersten Gewichtsänderung.
-// Schlüssel in touched: "name", "total" (Gewichte bzw. Positionen bearbeitet), "<positionId>:<feld>".
+// Field messages appear only after the field was left or after the first save attempt.
 export function visibleEditorErrors(errors, { submitted = false, touched = new Set(), positionIds = [] } = {}) {
   const show = (key) => submitted || touched.has(key);
   return {
@@ -94,9 +89,6 @@ export function visibleEditorErrors(errors, { submitted = false, touched = new S
   };
 }
 
-// Anzeige „gültig/ungültig“ der Gewichtssumme (FE #69, H9): Solange kein Gewicht eingegeben,
-// keine Gewichtssumme bearbeitet und noch nicht gespeichert wurde, bleibt die Anzeige neutral („—“ ohne Farbe).
-// Ein geladenes Portfolio hat Gewichte und zeigt deshalb sofort seinen Status.
 export function totalStatusDisplay({ hasErrors, submitted = false, touched = new Set(), weightInputs = [] }) {
   const weightEntered = weightInputs.some((weightInput) => String(weightInput ?? "").trim() !== "");
   if (!submitted && !touched.has("total") && !weightEntered) {
@@ -137,9 +129,7 @@ export function initPortfolioEditor(rootDocument = document) {
   const savedHintElement = rootDocument.getElementById("saved-portfolios-hint");
   const savedListElement = rootDocument.getElementById("saved-portfolios-list");
 
-  // Fehlende Anlagen und alle übrigen Feldmeldungen erst nach dem ersten Speicherversuch markieren (H4)
   let submitted = false;
-  // Felder, die der Nutzer schon verlassen hat; deren Meldungen erscheinen auch vor dem Speichern (H4)
   const touched = new Set();
 
   function markTouched(...keys) {
@@ -153,7 +143,6 @@ export function initPortfolioEditor(rootDocument = document) {
     saveStatusElement.classList.toggle("summary-status-invalid", Boolean(message) && isError);
   }
 
-  // Anmeldung abgelaufen oder vom Backend abgelehnt (401): neu anmelden, danach zurück zum Editor
   function redirectToLogin() {
     clearSession();
     window.location.assign(loginPageUrl(REASONS.expired, "portfolio.html"));
@@ -263,7 +252,6 @@ export function initPortfolioEditor(rootDocument = document) {
 
       symbolInput.addEventListener("input", (event) => {
         position.symbol = event.target.value;
-        // Von Hand geändertes Symbol passt nicht mehr zur Anlage aus der Suche
         position.assetId = null;
         updateSummaryAndErrors();
       });
@@ -279,7 +267,6 @@ export function initPortfolioEditor(rootDocument = document) {
         updateSummaryAndErrors();
       });
 
-      // H4: Meldungen eines Feldes erst nach dem Verlassen anzeigen
       symbolInput.addEventListener("blur", () => markTouched(`${position.id}:symbol`));
       nameInput.addEventListener("blur", () => markTouched(`${position.id}:name`));
       weightInput.addEventListener("blur", () => markTouched(`${position.id}:weightPct`, "total"));
@@ -344,8 +331,7 @@ export function initPortfolioEditor(rootDocument = document) {
     renderPositions();
   });
 
-  // Treffer aus der Anlagensuche (search.js, Ereignis "asset-selected") als Position übernehmen.
-  // Die id der Anlage wird als assetId gespeichert; ohne sie lehnt das Backend das Portfolio ab.
+  // The asset id is stored as assetId; the backend rejects positions without it.
   rootDocument.addEventListener("asset-selected", (event) => {
     const asset = event.detail;
     const existing = state.positions.find((position) => position.assetId === asset.id);
@@ -394,15 +380,12 @@ export function initPortfolioEditor(rootDocument = document) {
     }
 
     setSaveStatus(editingPortfolioId == null ? MESSAGES.saved : MESSAGES.updated, false);
-    // Liste aktualisieren, damit das neue Portfolio auch zum Laden und Simulieren bereitsteht.
     refreshSavedPortfolios();
   });
 
   function loadIntoEditor(saved) {
-    // Gespeicherte API-Daten als bearbeitbaren Entwurf in den Editor übernehmen.
     const draft = toEditorDraft(saved);
     editingPortfolioId = saved.id;
-    // Neu geladenes Portfolio: Meldungen wieder erst nach Verlassen oder Speichern (H4)
     submitted = false;
     touched.clear();
     state.name = draft.name;
@@ -419,7 +402,7 @@ export function initPortfolioEditor(rootDocument = document) {
       const item = rootDocument.createElement("li");
       item.className = "saved-portfolio";
 
-      // textContent statt innerHTML: Namen aus der API werden nie als HTML ausgeführt
+      // textContent, not innerHTML: names from the API are never interpreted as HTML.
       const text = rootDocument.createElement("div");
       const name = rootDocument.createElement("span");
       name.className = "saved-portfolio-name";
@@ -475,7 +458,6 @@ export function initPortfolioEditor(rootDocument = document) {
 
   async function refreshSavedPortfolios() {
     const token = getToken();
-    // Ohne Anmeldung ist der Editor ausgeblendet (protectSection); nichts laden
     if (!token) {
       return;
     }

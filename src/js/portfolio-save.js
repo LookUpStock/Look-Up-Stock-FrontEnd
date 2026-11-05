@@ -1,5 +1,3 @@
-// KI-Log Nr. [eintragen]: Speichern und Laden von Portfolios mit KI erstellt, vom Team zu prüfen (US-03)
-
 import { savePortfolio, updatePortfolio, deletePortfolio, listPortfolios, apiErrorText } from "./api.js";
 import { isUnauthorized } from "./auth.js";
 import { formatWeightInput } from "./portfolio.js";
@@ -16,20 +14,14 @@ export const MESSAGES = {
   unexpected: "Ein unerwarteter Fehler ist aufgetreten.",
 };
 
-// ===== Logik: ohne Browser testbar =====
-
-// Je Position eine Meldung, wenn die Anlage nicht aus der Suche stammt (sonst ASSET_NOT_FOUND im Backend)
 export function missingAssetErrors(portfolio) {
   return portfolio.positions.map((position) => (position.assetId == null ? MESSAGES.missingAsset : ""));
 }
 
-// Meldung vom Backend samt Details (z. B. "Unbekannte assetId 7."); sonst allgemeiner Text
 export function errorMessageFrom(error) {
   return apiErrorText(error) ?? MESSAGES.unexpected;
 }
 
-// Portfolio an das Backend senden.
-// Ergebnis: { status: "saved", portfolio } | { status: "unauthorized" } | { status: "error", message }
 export async function submitPortfolio(portfolio, token, save = savePortfolio) {
   if (!token) {
     return { status: "unauthorized" };
@@ -74,8 +66,6 @@ export async function removePortfolio(id, token, remove = deletePortfolio) {
   }
 }
 
-// Eigene Portfolios laden.
-// Ergebnis: { status: "loaded", portfolios } | { status: "unauthorized" } | { status: "error", message }
 export async function loadSavedPortfolios(token, list = listPortfolios) {
   if (!token) {
     return { status: "unauthorized" };
@@ -91,7 +81,6 @@ export async function loadSavedPortfolios(token, list = listPortfolios) {
   }
 }
 
-// Gespeichertes Portfolio (PortfolioResponse) in die Felder des Editors übernehmen
 export function toEditorDraft(saved) {
   return {
     name: saved?.name ?? "",
@@ -104,12 +93,10 @@ export function toEditorDraft(saved) {
   };
 }
 
-// Anzahl der Positionen mit Singular bei genau einer Position; gemeinsam für MPA und SPA (FE #71, H12)
 export function formatPositionCount(count) {
   return count === 1 ? "1 Position" : `${count} Positionen`;
 }
 
-// Zweite Zeile eines gespeicherten Portfolios: Anzahl Positionen und Datum
 export function formatSavedDetails(saved) {
   const parts = [formatPositionCount(saved?.positions?.length ?? 0)];
   const createdAt = Date.parse(saved?.createdAt);

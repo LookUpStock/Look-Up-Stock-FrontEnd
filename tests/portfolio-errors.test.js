@@ -1,11 +1,8 @@
-// KI-Log ME-[Nr.]: Tests zur Anzeige der Feldmeldungen im Portfolio-Editor mit KI erstellt, von Mert Eminel geprüft (FE #56, H4)
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createPortfolio, validatePortfolio } from "../src/js/portfolio.js";
 import { hasWeightErrors, totalStatusDisplay, visibleEditorErrors } from "../src/js/portfolio-ui.js";
 
-// Leerer Editor direkt nach dem Laden: kein Name, eine leere Position
 const emptyErrors = validatePortfolio(createPortfolio("", [{ id: "p1", symbol: "", name: "", weightPct: Number.NaN }])).errors;
 const ids = ["p1"];
 
@@ -76,7 +73,6 @@ test("whitespace in the weight field counts as no input (FE #69, H9)", () => {
 });
 
 
-// Gewichtssumme bewertet nur die Gewichte (FE #83, H13)
 function weightSumStatus(name, weightPct, weightInput = String(weightPct)) {
   const errors = validatePortfolio(createPortfolio(name, [{ id: "p1", symbol: "URTH", name: "iShares MSCI World ETF", weightPct }])).errors;
   return { errors, status: totalStatusDisplay({ hasErrors: hasWeightErrors(errors), weightInputs: [weightInput] }) };
@@ -86,7 +82,6 @@ test("100 % without a portfolio name shows a valid weight sum (FE #83, H13)", ()
   const { errors, status } = weightSumStatus("", 100);
 
   assert.deepEqual(status, { text: "gültig", state: "valid" });
-  // Der fehlende Name wird weiterhin am Namensfeld gemeldet, Speichern bleibt gesperrt
   assert.equal(visibleEditorErrors(errors, { submitted: true, positionIds: ids }).name, "Der Portfolio-Name ist erforderlich.");
   assert.equal(validatePortfolio(createPortfolio("", [{ id: "p1", symbol: "URTH", name: "iShares MSCI World ETF", weightPct: 100 }])).valid, false);
 });

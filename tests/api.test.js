@@ -1,15 +1,11 @@
-// KI-Log Nr. 23: Unit-Tests der API-Schicht mit KI erstellt, vom Team geprüft und angepasst
-
 import { test, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { request, fetchHealth, fetchPortfolio, fetchUsageReport, ApiError, API_BASE_URL, apiErrorText } from "../src/js/api.js";
 
-// Nach jedem Test das echte fetch wiederherstellen
 afterEach(() => {
   mock.restoreAll();
 });
 
-// Ersetzt fetch durch eine simulierte Antwort des Backends
 function mockFetchResponse(status, body) {
   return mock.method(globalThis, "fetch", async () =>
     new Response(body === undefined ? null : JSON.stringify(body), {
@@ -119,7 +115,6 @@ test("request throws NETWORK_ERROR when the backend is unreachable", async () =>
   });
 });
 
-// KI-Log ME-[Nr.]: Tests der gemeinsamen Fehlermeldung mit KI erstellt, von Mert Eminel geprüft (FE #34, B7)
 test("apiErrorText names every asset exactly once for 422 INSUFFICIENT_DATA (B7)", () => {
   const error = new ApiError(
     422,

@@ -1,5 +1,3 @@
-// KI-Log ME-[Nr.]: Tests zum Zielbetrag im Vergleich mit KI erstellt, von Mert Eminel geprüft (FE #30, B1)
-
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateComparisonParameters } from "../src/js/comparison.js";

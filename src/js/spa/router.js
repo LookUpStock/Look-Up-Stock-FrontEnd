@@ -1,5 +1,3 @@
-// Hash-Router für den SPA-Touchpoint (Docs #160, FE #53).
-
 const ROUTE_TITLES = {
   portfolios: "Portfolios",
   portfolio: "Portfolio",
@@ -8,7 +6,6 @@ const ROUTE_TITLES = {
   "not-found": "Seite nicht gefunden",
 };
 
-// Übersetzt den aktuellen Hash in eine Ansicht und ihre Parameter.
 export function resolveRoute(hash = "") {
   const rawPath = String(hash).replace(/^#/, "") || "/portfolios";
   const path = rawPath.length > 1 ? rawPath.replace(/\/+$/, "") : rawPath;
@@ -48,7 +45,6 @@ function notFoundRoute() {
   return { name: "not-found", params: {} };
 }
 
-// Startet die Navigation, aktualisiert den Titel und setzt den Fokus auf die neue Überschrift.
 export function createHashRouter({ window: browserWindow = globalThis.window, render }) {
   let navigation = 0;
   let lastHash = null;
