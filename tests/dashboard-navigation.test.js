@@ -53,6 +53,6 @@ test("dashboard link is not inserted for regular or unauthenticated users", () =
 test("dashboard navigation keeps the SPA entry and has no static manager-only link", () => {
   const html = readFileSync(new URL("../src/dashboard.html", import.meta.url), "utf8");
 
-  assert.match(html, /href="app\.html#\/portfolios"[^>]*>App \(SPA\)<\/a>/);
+  assert.match(html, /href="app\.html#\/portfolios"[^>]*>Mein Bereich<\/a>/);
   assert.doesNotMatch(html, /href="dashboard\.html"[^>]*>Auswertungen<\/a>/);
 });
