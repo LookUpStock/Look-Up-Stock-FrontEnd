@@ -110,6 +110,10 @@ function setSummaryState(summaryStatusElement, state) {
   summaryStatusElement.classList.toggle("summary-status-invalid", state === "invalid");
 }
 
+export function hasWeightErrors(errors) {
+  return Boolean(errors.totalWeightPct) || errors.positions.some((positionErrors) => Boolean(positionErrors.weightPct));
+}
+
 export function initPortfolioEditor(rootDocument = document) {
   const editor = rootDocument.getElementById("portfolio-editor");
 
@@ -165,7 +169,7 @@ export function initPortfolioEditor(rootDocument = document) {
       positionIds: state.positions.map((position) => position.id),
     });
     const totalWeightPct = calculateTotalWeight(portfolio);
-    const hasErrors = !validation.valid;
+    const hasErrors = hasWeightErrors(validation.errors);
     const hasInvalidWeights = validation.errors.positions.some((positionErrors) => positionErrors.weightPct);
 
     portfolioNameInput.value = state.name;
